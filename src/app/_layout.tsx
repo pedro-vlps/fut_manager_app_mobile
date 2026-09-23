@@ -1,18 +1,15 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { AuthProvider, useAuth } from '@/contexts/auth';
+import { palette } from '@/components/fut-ui';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
-  );
+function Navigation() {
+  const { session } = useAuth();
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.background } }}>
+    <Stack.Protected guard={!session}><Stack.Screen name="login" /></Stack.Protected>
+    <Stack.Protected guard={!!session}><Stack.Screen name="index" /><Stack.Screen name="profile" /><Stack.Screen name="explore" /><Stack.Screen name="groups" /></Stack.Protected>
+  </Stack>;
+}
+export default function RootLayout() {
+  return <AuthProvider><StatusBar style="dark" /><Navigation /></AuthProvider>;
 }
