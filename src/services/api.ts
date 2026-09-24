@@ -4,7 +4,7 @@ export const API_URL = (process.env.EXPO_PUBLIC_API_URL ??
   (Platform.OS === 'android' ? '' : '')).replace(/\/$/, '');
 export type Profile = { id: string; name: string; email: string; positions: Record<string, string[]> };
 export type Session = { access_token: string; profile: Profile };
-export type Group = { id: string; name: string; description: string | null; role: 'owner' | 'admin' | 'member' };
+export type Group = { id: string; code: string; name: string; description: string | null; role: 'owner' | 'admin' | 'member' };
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) { super(message); }

@@ -40,6 +40,11 @@ function GroupContent({ groupId }: { groupId: string }) {
   }
   const presence = event?.my_presence;
   return <GroupScreen title={resource.data?.group.name ?? 'Seu grupo'} subtitle={resource.data?.group.description ?? undefined} {...resource}>
+    <Text selectable style={gs.badge}>Código do grupo: {resource.data?.group.code}</Text>
+    {resource.data?.can_manage && <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/requests', params: { groupId } })} style={gs.card}>
+      <View style={gs.row}><Text style={gs.heading}>Pedidos de entrada</Text><Text style={gs.link}>→</Text></View>
+      <Text style={ui.body}>Aceite ou recuse quem quer participar do grupo.</Text>
+    </Pressable>}
     <View style={gs.card}>
       <Text style={ui.eyebrow}>{event?.status === 'in_progress' ? 'EVENTO EM ANDAMENTO' : 'EVENTO DO GRUPO'}</Text>
       {event ? <>
