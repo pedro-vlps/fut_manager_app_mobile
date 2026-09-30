@@ -17,10 +17,15 @@ export function Scoreboard({ match }: { match: Match }) {
     {score.result && <Text style={gs.muted}>{score.result === 'draw' ? 'Empate' : score.result === 'win' ? 'Vitória' : 'Derrota'}</Text>}
   </View>)}</View>;
 }
-export function TeamCards({ teams }: { teams: Team[] }) {
+export function TeamCards({ teams, ratings = {} }: { teams: Team[]; ratings?: Record<string, number | null> }) {
   return <>{teams.map(team => <View key={team.id} style={[gs.card, { borderLeftWidth: 5, borderLeftColor: team.color ?? palette.green }]}>
     <Text style={gs.heading}>{team.name} · {team.players.length}</Text>
-    {team.players.map(player => <Text key={player.presence_id} style={ui.body}>{player.name}{player.is_guest ? ' · convidado' : ''}{player.role === 'goalkeeper' ? ' · goleiro' : ''}</Text>)}
+    {team.players.map(player => <View key={player.presence_id} style={[gs.row, { flexWrap: 'wrap' }]}>
+      <Text style={[ui.body, { flex: 1 }]}>{player.name}{player.is_guest ? ' · convidado' : ''}{player.role === 'goalkeeper' ? ' · goleiro' : ''}</Text>
+      {Object.prototype.hasOwnProperty.call(ratings, player.person_id) && <Text style={gs.badge}>
+        {ratings[player.person_id] === null ? 'Sem avaliação' : `Nota ${ratings[player.person_id]!.toFixed(1).replace('.', ',')}`}
+      </Text>}
+    </View>)}
   </View>)}</>;
 }
 export function MatchLog({ match, remove, busy }: { match: Match; remove?: (id: string) => void; busy: boolean }) {

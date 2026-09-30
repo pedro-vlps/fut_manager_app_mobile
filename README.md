@@ -19,7 +19,29 @@ persistidas. Sessões expiradas retornam à tela de login.
 
 Verificação: `npm run lint` e `npx tsc --noEmit`.
 
+Ao agendar com **Repetir toda semana**, selecione o dia da semana e o horário.
+O app mostra a primeira ocorrência disponível no fuso escolhido, respeitando
+uma hora de antecedência. Se o horário de hoje já passou ou está muito próximo,
+o primeiro evento fica para a semana seguinte. Eventos avulsos continuam usando
+uma data completa. Ao encerrar um evento semanal, a API cria o próximo no mesmo
+dia e horário, com novas confirmações.
+
 ## Área do grupo
+
+Em **Configurações do grupo → Parâmetros de sorteio**, owners e administradores
+podem ligar ou desligar **Posição**, **Notas** e **Vitórias** e salvar a escolha.
+Essa é a ordem de prioridade dos critérios ativos. Todos começam desligados.
+
+Para avaliar alguém, abra **Membros do grupo → perfil do jogador → Avaliação
+privada**. A nota é de 0 a 10, com uma casa decimal; pode usar vírgula ou ponto.
+Deixe vazio e salve para remover. Somente owners e administradores do grupo veem e
+editam as notas, inclusive a própria avaliação. As alterações podem ser
+feitas a qualquer momento e só afetam os próximos sorteios, preservando os times
+já montados.
+
+Depois do sorteio, a lista **Times e jogadores** mostra as notas atuais aos
+owners e administradores, incluindo a própria avaliação. Pessoas sem nota aparecem
+como **Sem avaliação**. Jogadores comuns continuam vendo somente a escalação.
 
 Toque em um grupo na home para abrir seu menu. O próximo evento mostra data,
 horário, local, quantidade de confirmados e sua situação. A confirmação respeita

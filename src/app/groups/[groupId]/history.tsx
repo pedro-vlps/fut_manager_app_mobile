@@ -13,8 +13,13 @@ export default function History() {
     {resource.data?.map(event => <View key={event.id} style={gs.card}>
       <Text style={gs.badge}>{eventStatuses[event.status]}</Text><Text style={gs.heading}>{event.title}</Text>
       <Text style={ui.body}>{eventDate(event.scheduled_at)}</Text><Text style={gs.muted}>{event.location || 'Local não informado'}</Text>
+      <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/rankings', params: { groupId, eventId: event.id } })} style={gs.back}><Text style={gs.link}>Ver ranking do evento →</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/event', params: { groupId, eventId: event.id, readOnly: '1' } })} style={gs.back}><Text style={gs.link}>Consultar partidas, gols e jogadores →</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/confirmed', params: { groupId, eventId: event.id } })} style={gs.back}><Text style={gs.link}>Ver confirmados →</Text></Pressable>
     </View>)}
+    <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/seasons', params: { groupId } })} style={gs.card}>
+      <Text style={gs.heading}>Histórico de temporadas →</Text>
+      <Text style={ui.body}>Consulte os registros e rankings de cada período.</Text>
+    </Pressable>
   </GroupScreen>;
 }

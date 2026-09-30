@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { ApiError, request } from '@/services/api';
 import { eventDate, eventStatuses, Overview, Presence } from '@/services/groups';
+import { Dropdown } from '@/components/dropdown';
 
 export default function GroupPage() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -17,18 +18,20 @@ function GroupContent({ groupId }: { groupId: string }) {
   const resource = useApiResource<Overview>(`/my-groups/${groupId}`);
   const { session, expireSession } = useAuth();
   const [busy, setBusy] = useState(false);
+  const [roleChoice, setRoleChoice] = useState<{ eventId: string; role: 'player' | 'goalkeeper' }>();
   const [feedback, setFeedback] = useState<{ message: string; error: boolean }>();
   const submitting = useRef(false);
   const alive = useRef(false);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const event = resource.data?.next_event;
+  const role = roleChoice?.eventId === event?.id ? roleChoice?.role ?? 'player' : event?.my_presence?.role ?? 'player';
   async function confirm() {
     if (!event || !session || submitting.current) return;
     submitting.current = true;
     setBusy(true);
     setFeedback(undefined);
     try {
-      const result = await request<Presence>(`/my-groups/${groupId}/events/${event.id}/confirm`, { method: 'POST' }, session.access_token);
+      const result = await request<Presence>(`/my-groups/${groupId}/events/${event.id}/confirm`, { method: 'POST', body: JSON.stringify({ role }) }, session.access_token);
       if (!alive.current) return;
       setFeedback({ message: result.status === 'waitlist' ? `Você entrou na lista de espera. Posição: ${result.waitlist_position ?? 'a definir'}.` : 'Presença confirmada! Nos vemos em campo.', error: false });
       await resource.refresh();
@@ -41,6 +44,10 @@ function GroupContent({ groupId }: { groupId: string }) {
   const presence = event?.my_presence;
   return <GroupScreen title={resource.data?.group.name ?? 'Seu grupo'} subtitle={resource.data?.group.description ?? undefined} {...resource}>
     <Text selectable style={gs.badge}>Código do grupo: {resource.data?.group.code}</Text>
+    {resource.data?.can_manage && <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/settings', params: { groupId } })} style={gs.card}>
+      <View style={gs.row}><Text style={gs.heading}>Configurações do grupo</Text><Text style={gs.link}>→</Text></View>
+      <Text style={ui.body}>Defina se o grupo usa temporadas e a duração de cada período.</Text>
+    </Pressable>}
     {resource.data?.can_manage && <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/requests', params: { groupId } })} style={gs.card}>
       <View style={gs.row}><Text style={gs.heading}>Pedidos de entrada</Text><Text style={gs.link}>→</Text></View>
       <Text style={ui.body}>Aceite ou recuse quem quer participar do grupo.</Text>
@@ -53,11 +60,15 @@ function GroupContent({ groupId }: { groupId: string }) {
         <Text style={ui.body}>{event.location || 'Local a definir'}</Text>
         <Text style={gs.badge}>{eventStatuses[event.status]}</Text>
         <Button onPress={() => router.push({ pathname: '/groups/[groupId]/event', params: { groupId, eventId: event.id } })}>{event.status === 'in_progress' ? 'Acompanhar evento e partidas' : 'Abrir evento · times e partidas'}</Button>
-        <Text style={ui.body}>{event.confirmed_count}{event.max_confirmed_players ? ` de ${event.max_confirmed_players}` : ''} presenças confirmadas</Text>
-        {presence?.status === 'confirmed' && <Text style={gs.success}>Sua presença está confirmada.</Text>}
+        {event.min_confirmed_goalkeepers != null ? <>
+          <Text style={ui.body}>{event.confirmed_players_count}{event.max_confirmed_players != null ? ` de ${event.max_confirmed_players}` : ''} jogadores de linha · {event.confirmed_goalkeepers_count}{event.max_confirmed_goalkeepers != null ? ` de ${event.max_confirmed_goalkeepers}` : ''} goleiros confirmados</Text>
+          <Dropdown label="Confirmar presença como" value={role} options={[{ value: 'player', label: 'Jogador de linha' }, { value: 'goalkeeper', label: 'Goleiro' }]} disabled={busy || resource.refreshing || (!event.can_confirm && !event.can_change_role)} onChange={value => setRoleChoice({ eventId: event.id, role: value as 'player' | 'goalkeeper' })} />
+        </> : <Text style={ui.body}>{event.confirmed_count}{event.max_confirmed_players ? ` de ${event.max_confirmed_players}` : ''} presenças confirmadas</Text>}
+        {presence?.status === 'confirmed' && <Text style={gs.success}>Sua presença está confirmada{event.min_confirmed_goalkeepers != null ? ` como ${presence.role === 'goalkeeper' ? 'goleiro' : 'jogador de linha'}` : ''}.</Text>}
         {presence?.status === 'waitlist' && <Text style={gs.success}>Você está na lista de espera · posição {presence.waitlist_position ?? 'a definir'}.</Text>}
         {event.confirmation_message && <Text style={gs.muted}>{event.confirmation_message}</Text>}
-        <Button onPress={confirm} loading={busy} disabled={!event.can_confirm || resource.refreshing}>{presence?.status === 'confirmed' ? 'Presença confirmada' : presence?.status === 'waitlist' ? 'Na lista de espera' : event.max_confirmed_players && event.confirmed_count >= event.max_confirmed_players ? 'Entrar na lista de espera' : 'Confirmar presença'}</Button>
+        <Button onPress={confirm} loading={busy} disabled={resource.refreshing || (!event.can_confirm && !(event.can_change_role && role !== presence?.role))}>{event.can_change_role && role !== presence?.role ? 'Alterar função na lista' : presence?.status === 'confirmed' ? 'Presença confirmada' : presence?.status === 'waitlist' ? 'Na lista de espera' : 'Confirmar presença'}</Button>
+        {event.can_change_role && role !== presence?.role && <Text style={gs.muted}>A troca libera sua vaga atual. Se as vagas da nova função estiverem preenchidas, você entrará na lista de espera.</Text>}
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/confirmed', params: { groupId, eventId: event.id } })} style={gs.back}><Text style={[gs.link, { textAlign: 'center' }]}>Ver lista de confirmados →</Text></Pressable>
       </> : <Text style={ui.body}>Ainda não há um próximo evento agendado. Assim que a turma marcar, ele aparece aqui.</Text>}
     </View>
@@ -65,6 +76,7 @@ function GroupContent({ groupId }: { groupId: string }) {
     <Text style={gs.heading}>Explore o grupo</Text>
     {([
       ['history', 'Histórico de eventos', 'Confira as datas e os participantes das peladas.'],
+      ['seasons', 'Histórico de temporadas', 'Veja os rankings e registros dos períodos encerrados.'],
       ['rankings', 'Rankings do grupo', 'Gols, assistências, vitórias e muito mais.'],
       ['members', 'Membros do grupo', 'Conheça quem faz parte da sua turma.'],
     ] as const).map(([page, title, subtitle]) => <Pressable key={page} accessibilityRole="button" onPress={() => router.push({ pathname: `/groups/[groupId]/${page}`, params: { groupId } })} style={({ pressed }) => [gs.card, { opacity: pressed ? 0.65 : 1 }]}>

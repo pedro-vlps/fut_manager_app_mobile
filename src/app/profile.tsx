@@ -6,10 +6,13 @@ import { Catalog, Positions, PositionSelector } from '@/components/position-sele
 import { useAuth } from '@/contexts/auth';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { ApiError, Profile, request } from '@/services/api';
+import { ProfileTrophies } from '@/components/profile-trophies';
+import { TrophyCollection } from '@/services/trophies';
 
 export default function ProfileScreen() {
   const resource = useApiResource<Profile>('/auth/me');
   const catalog = useApiResource<Catalog>('/auth/modalities');
+  const trophies = useApiResource<TrophyCollection>('/auth/me/trophies');
   const { session, updateProfile, expireSession } = useAuth();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Positions>({});
@@ -41,8 +44,8 @@ export default function ProfileScreen() {
   const profile = resource.data;
   return <GroupScreen title="Meu perfil" eyebrow="FUTMANAGER · JOGADOR" subtitle="Seus dados e suas posições em campo."
     loading={resource.loading || catalog.loading} error={resource.error || catalog.error}
-    refreshing={resource.refreshing || catalog.refreshing}
-    refresh={() => { if (!editing && !working.current) { void resource.refresh(); void catalog.refresh(); } }}>
+    refreshing={resource.refreshing || catalog.refreshing || trophies.refreshing}
+    refresh={() => { if (!editing && !working.current) { void resource.refresh(); void catalog.refresh(); void trophies.refresh(); } }}>
     {profile && <>
       <View style={gs.card}>
         <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: palette.lime, alignItems: 'center', justifyContent: 'center' }}>
@@ -52,6 +55,7 @@ export default function ProfileScreen() {
         <Text selectable style={ui.body}>{profile.email}</Text>
       </View>
       {!!success && <Text accessibilityLiveRegion="polite" style={gs.success}>{success}</Text>}
+      <ProfileTrophies {...trophies} />
       {editing ? <View style={gs.card}>
         <PositionSelector value={draft} onChange={setDraft} disabled={busy} />
         {!valid && <Text style={ui.body}>Selecione pelo menos uma posição em uma modalidade para salvar.</Text>}
