@@ -10,7 +10,7 @@ export function Choice({ children, selected, disabled, onPress }: PropsWithChild
     <Text style={{ color: selected ? '#FFFFFF' : palette.ink, fontWeight: '600' }}>{children}</Text>
   </Pressable>;
 }
-export function Scoreboard({ match }: { match: Match }) {
+export function Scoreboard({ match }: { match: Pick<Match, 'scores'> }) {
   return <View style={gs.row}>{match.scores.map(score => <View key={score.team_id} style={{ flex: 1, alignItems: 'center', gap: 6 }}>
     <Text style={[gs.badge, { textAlign: 'center' }]}>{score.name}</Text>
     <Text style={{ fontSize: 44, fontWeight: '800', color: palette.ink }}>{score.goals}</Text>
@@ -28,7 +28,7 @@ export function TeamCards({ teams, ratings = {} }: { teams: Team[]; ratings?: Re
     </View>)}
   </View>)}</>;
 }
-export function MatchLog({ match, remove, busy }: { match: Match; remove?: (id: string) => void; busy: boolean }) {
+export function MatchLog({ match, remove, busy }: { match: Pick<Match, 'scores' | 'actions'>; remove?: (id: string) => void; busy: boolean }) {
   return <View style={{ gap: 12 }}><Text style={gs.heading}>Súmula</Text>
     {match.actions.length === 0 && <Text style={ui.body}>Nenhum lance registrado nesta partida.</Text>}
     {match.actions.map(action => <View key={action.id} style={[gs.row, { paddingVertical: 8, borderTopWidth: 1, borderColor: palette.border }]}>

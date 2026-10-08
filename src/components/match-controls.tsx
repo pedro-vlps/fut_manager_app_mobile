@@ -7,7 +7,7 @@ import { Choice, styles } from '@/components/event-ui';
 import { ActionType, Match, Team, actionLabels, operationId } from '@/services/lifecycle';
 
 export function ActionForm({ match, busy, submit }: {
-  match: Match; busy: boolean; submit: (body: unknown) => Promise<boolean>;
+  match: Pick<Match, 'scores' | 'players'>; busy: boolean; submit: (body: unknown) => Promise<boolean>;
 }) {
   const [teamId, setTeamId] = useState(match.scores[0]?.team_id ?? '');
   const [playerId, setPlayerId] = useState('');

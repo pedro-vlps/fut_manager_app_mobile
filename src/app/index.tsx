@@ -126,6 +126,11 @@ export default function HomeScreen() {
               </View>
             </Pressable>
             <View style={{ gap: 16 }}>
+              <Button onPress={() => router.push('/create')}>Criar grupo ou campeonato</Button>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/championships')} style={[ui.input, { flex: 1 }]}><Text style={styles.roleText}>Campeonatos →</Text></Pressable>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/clubs')} style={[ui.input, { flex: 1 }]}><Text style={styles.roleText}>Meus times e convites →</Text></Pressable>
+              </View>
               <View style={styles.heading}>
                 <Text style={ui.title}>Meus grupos</Text>
                 {!loading && (

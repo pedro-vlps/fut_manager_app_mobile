@@ -1,5 +1,24 @@
 # Fut Manager Mobile
 
+## Campeonatos e times
+
+Na home, **Criar grupo ou campeonato** abre a escolha entre as duas opções.
+Campeonatos têm nome, temporada/edição, formato e 4, 8 ou 16 times.
+**Campeonatos** permite buscar edições, consultar elencos, classificação e jogos.
+**Meus times e convites** permite criar times permanentes, convidar jogadores
+pelo e-mail cadastrado e aceitar/recusar os convites recebidos no app.
+
+O criador do time o inscreve no campeonato com ao menos dois jogadores
+confirmados. O elenco fica salvo na inscrição; para alterá-lo antes do início,
+retire e reinscreva o time. O organizador inicia quando todas as vagas estiverem
+preenchidas e confirma os resultados para avançar as fases até a final.
+
+Grupos + mata-mata usa grupos de quatro e classifica os dois melhores de cada
+grupo. Mata-mata usa eliminação simples; empates pedem o vencedor do desempate.
+Cascata aceita exatamente quatro times e usa chaves de vencedores e perdedores, com final geral única. O app respeita a ordem dos jogos para que o perdedor da final dos vencedores descanse durante a semifinal dos perdedores.
+
+Requer a API com as migrations `017_championships.sql` e `018_cascade_trophies.sql`. Ao confirmar os resultados, informe gols, assistências e gols contra por jogador. A final distribui os troféus exclusivos de campeão, vice-campeão, artilheiro e líder de assistências, exibidos na edição e na coleção do perfil. Empatados nas maiores marcas positivas também recebem os troféus individuais.
+
 ## Login e grupos
 
 A tela inicial solicita e-mail e senha de um perfil já cadastrado na API.
