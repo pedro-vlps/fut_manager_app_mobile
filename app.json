@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "fut_manager_app_mobile",
+    "name": "FutManager",
     "slug": "fut_manager_app_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -37,6 +37,9 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {}
     }
   }
 }
