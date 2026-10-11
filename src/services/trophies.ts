@@ -3,7 +3,7 @@ export type TrophySummary = { category: string; name: string; count: number };
 export type TrophyCollection = { total: number; summary: TrophySummary[]; trophies: Trophy[] };
 
 export const trophySymbols: Record<string, string> = {
-  goals: '⚽', assists: '★', wins: '✓', losses: '↘', own_goals: '↩',
+  season_champion: '🏆', goals: '⚽', assists: '★', wins: '✓', losses: '↘', own_goals: '↩',
   yellow_cards: '🟨', red_cards: '🟥', goals_conceded: '🧤',
   championship_champion: '🏆', championship_runner_up: '🥈', championship_goals: '⚽', championship_assists: '★',
 };

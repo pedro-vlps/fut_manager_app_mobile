@@ -10,7 +10,7 @@ export type Event = {
   min_confirmed_goalkeepers: number | null;
   max_confirmed_goalkeepers: number | null;
 };
-export type NextEvent = Event & { confirmed_count: number; confirmed_players_count: number; confirmed_goalkeepers_count: number; my_presence: Presence | null; can_confirm: boolean; can_change_role: boolean; confirmation_message: string | null };
+export type NextEvent = Event & { confirmed_count: number; confirmed_players_count: number; confirmed_goalkeepers_count: number; my_presence: Presence | null; can_confirm: boolean; can_change_role: boolean; can_cancel_confirmation: boolean; confirmation_message: string | null };
 export type Overview = { group: Omit<Group, 'role'>; next_event: NextEvent | null; can_manage: boolean };
 export type DiscoveredGroup = { id: string; code: string; name: string; description: string | null; membership: 'active' | 'blocked' | 'none'; request_status: 'pending' | 'approved' | 'rejected' | null };
 export type JoinRequest = { id: string; profile_id: string; name: string; created_at: string; status: 'pending' | 'approved' | 'rejected' };
@@ -24,3 +24,5 @@ export const roleNames: Record<string, string> = { owner: 'Organizador', admin: 
 export function eventDate(value: string, timeZone?: string) {
   return new Date(value).toLocaleString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone });
 }
+
+export type ConfirmedPerson = Person & { can_cancel_confirmation: boolean };

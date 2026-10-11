@@ -13,7 +13,7 @@ export default function GeneralStandings() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const resource = useApiResource<Ranking[]>(`/my-groups/${groupId}/standings`);
   const rows = resource.data ?? [];
-  return <GroupScreen title="Classificação geral" subtitle="Pontos acumulados em todas as partidas finalizadas do grupo, incluindo temporadas anteriores." {...resource}>
+  return <GroupScreen title="Classificação geral" subtitle="Com temporadas ativas, os pontos são da temporada atual e o primeiro colocado recebe o troféu de campeão no encerramento. Sem temporadas, os pontos são acumulados." {...resource}>
     <Text style={gs.muted}>Vitória: 3 pontos · empate: 1 ponto · derrota: 0. Desempates: mais vitórias, mais empates, menos derrotas e mais gols marcados. Empates em todos os critérios dividem a posição.</Text>
     {!rows.length ? <Empty>Ainda não há jogadores com partidas finalizadas.</Empty> : <ScrollView horizontal showsHorizontalScrollIndicator accessibilityLabel="Classificação dos jogadores. Deslize para ver todas as colunas.">
       <View style={s.table}>

@@ -25,20 +25,20 @@ function GroupContent({ groupId }: { groupId: string }) {
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const event = resource.data?.next_event;
   const role = roleChoice?.eventId === event?.id ? roleChoice?.role ?? 'player' : event?.my_presence?.role ?? 'player';
-  async function confirm() {
+  async function confirm(cancel = false) {
     if (!event || !session || submitting.current) return;
     submitting.current = true;
     setBusy(true);
     setFeedback(undefined);
     try {
-      const result = await request<Presence>(`/my-groups/${groupId}/events/${event.id}/confirm`, { method: 'POST', body: JSON.stringify({ role }) }, session.access_token);
+      const result = await request<Presence>(`/my-groups/${groupId}/events/${event.id}/${cancel ? 'cancel-confirmation' : 'confirm'}`, { method: 'POST', ...(cancel ? {} : { body: JSON.stringify({ role }) }) }, session.access_token);
       if (!alive.current) return;
-      setFeedback({ message: result.status === 'waitlist' ? `Você entrou na lista de espera. Posição: ${result.waitlist_position ?? 'a definir'}.` : 'Presença confirmada! Nos vemos em campo.', error: false });
+      setFeedback({ message: cancel ? 'Sua confirmação foi removida.' : result.status === 'waitlist' ? `Você entrou na lista de espera. Posição: ${result.waitlist_position ?? 'a definir'}.` : 'Presença confirmada! Nos vemos em campo.', error: false });
       await resource.refresh();
     } catch (error) {
       if (!alive.current) return;
       if (error instanceof ApiError && error.status === 401) expireSession();
-      else setFeedback({ message: error instanceof Error ? error.message : 'Não foi possível confirmar.', error: true });
+      else setFeedback({ message: error instanceof Error ? error.message : 'Não foi possível atualizar sua presença.', error: true });
     } finally { submitting.current = false; if (alive.current) setBusy(false); }
   }
   const presence = event?.my_presence;
@@ -67,7 +67,8 @@ function GroupContent({ groupId }: { groupId: string }) {
         {presence?.status === 'confirmed' && <Text style={gs.success}>Sua presença está confirmada{event.min_confirmed_goalkeepers != null ? ` como ${presence.role === 'goalkeeper' ? 'goleiro' : 'jogador de linha'}` : ''}.</Text>}
         {presence?.status === 'waitlist' && <Text style={gs.success}>Você está na lista de espera · posição {presence.waitlist_position ?? 'a definir'}.</Text>}
         {event.confirmation_message && <Text style={gs.muted}>{event.confirmation_message}</Text>}
-        <Button onPress={confirm} loading={busy} disabled={resource.refreshing || (!event.can_confirm && !(event.can_change_role && role !== presence?.role))}>{event.can_change_role && role !== presence?.role ? 'Alterar função na lista' : presence?.status === 'confirmed' ? 'Presença confirmada' : presence?.status === 'waitlist' ? 'Na lista de espera' : 'Confirmar presença'}</Button>
+        <Button onPress={() => confirm()} loading={busy} disabled={resource.refreshing || (!event.can_confirm && !(event.can_change_role && role !== presence?.role))}>{event.can_change_role && role !== presence?.role ? 'Alterar função na lista' : presence?.status === 'confirmed' ? 'Presença confirmada' : presence?.status === 'waitlist' ? 'Na lista de espera' : 'Confirmar presença'}</Button>
+        {event.can_cancel_confirmation && <Button onPress={() => confirm(true)} disabled={busy || resource.refreshing}>{presence?.status === 'waitlist' ? 'Sair da lista de espera' : 'Remover minha confirmação'}</Button>}
         {event.can_change_role && role !== presence?.role && <Text style={gs.muted}>A troca libera sua vaga atual. Se as vagas da nova função estiverem preenchidas, você entrará na lista de espera.</Text>}
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/confirmed', params: { groupId, eventId: event.id } })} style={gs.back}><Text style={[gs.link, { textAlign: 'center' }]}>Ver lista de confirmados →</Text></Pressable>
       </> : <Text style={ui.body}>Ainda não há um próximo evento agendado. Assim que a turma marcar, ele aparece aqui.</Text>}
