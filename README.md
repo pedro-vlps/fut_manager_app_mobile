@@ -2,6 +2,39 @@
 
 ## Campeonatos e times
 
+O menu **Rankings** dos campeonatos usa a mesma interface dos grupos, com abas e
+navegação ao deslizar: Artilharia, Assistências, Gols contra, Amarelos,
+Vermelhos e Gols sofridos. Vitórias e Derrotas não aparecem. O menu está disponível
+em todos os formatos: Liga, Grupos + mata-mata, Mata-mata e Cascata. Os totais consideram
+somente partidas finalizadas; jogadores empatados compartilham a posição.
+Derrotas e quantidade de partidas são atribuídas ao elenco inscrito do time;
+desempates eliminatórios com placar igual não contam como derrota.
+Em cada jogo pendente, selecione o goleiro de cada time para alimentar Gols
+sofridos. Goleiros sem gols sofridos também aparecem após jogar uma partida.
+Essa seleção exige a migration `023_championship_goalkeepers.sql` na API.
+
+O formato **Liga (pontos corridos)** permite escolher **Jogo único** ou **Ida e volta**
+na criação. Todos os times se enfrentam uma ou duas vezes, com mandos invertidos
+no returno. Com 16 times, são 15 ou 30 rodadas. O líder ao fim de todos os jogos é
+campeão; o segundo é vice. Edições existentes continuam em jogo único.
+A tela **Jogos** mostra uma rodada por página, com abas horizontais e navegação
+ao deslizar para o lado, como nos rankings do grupo. Cada time joga uma vez por
+rodada, e os placares concluídos ficam visíveis. Qualquer jogo pendente pode
+receber lances e resultado, independentemente das rodadas anteriores.
+A tela **Resultados** usa as mesmas abas por rodada e navegação ao deslizar,
+exibindo apenas partidas finalizadas. Rodadas sem resultados mostram um aviso;
+os confrontos pendentes continuam acessíveis em **Jogos**.
+O menu do campeonato oferece **Classificação geral**, com pontos de todos os times
+em todas as fases. Vitória vale 3 pontos, empate vale 1 e derrota vale 0. Desempates:
+mais vitórias, mais empates, menos derrotas e mais gols marcados; persistindo o empate,
+ordem de inscrição. Placares empatados contam como empate, inclusive no mata-mata.
+Requer as migrations `021_league_championships.sql` e `022_league_home_and_away.sql` na API.
+
+No menu da pelada, **Classificação geral** mostra os jogadores e convidados por pontos
+acumulados em todas as temporadas, com os mesmos desempates e gols individuais.
+Somente partidas finalizadas de eventos não cancelados contam. Jogadores sem jogos
+não aparecem; empates completos dividem a posição.
+
 Na home, **Criar grupo ou campeonato** abre a escolha entre as duas opções.
 Campeonatos têm nome, temporada/edição, formato e 4, 8 ou 16 times.
 **Campeonatos** permite buscar edições, consultar elencos, classificação e jogos.

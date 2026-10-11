@@ -4,26 +4,25 @@ import { ChampionshipDetail, ChampionshipMatch, matchLabel } from '@/services/ch
 import { Empty, gs } from './group-screen';
 import { palette } from './fut-ui';
 
-export function ChampionshipStandings({ data }: { data: ChampionshipDetail }) {
-  const pools = [...new Set(data.standings.map(row => row.pool))];
+export function ChampionshipStandings({ data, general = false }: { data: ChampionshipDetail; general?: boolean }) {
+  const table = general ? data.general_standings : data.standings;
+  const pools = [...new Set(table.map(row => row.pool))];
   return <>
-    {!pools.length && data.format === 'groups_knockout' && <Empty>A classificação aparece após o início do campeonato.</Empty>}
+    {!pools.length && (data.format === 'groups_knockout' || data.format === 'league' || general) && <Empty>A classificação aparece após o início do campeonato.</Empty>}
     {pools.map(pool => <View key={pool} style={s.panel}>
-      <Text style={s.title}>Grupo {pool}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator accessibilityLabel={`Tabela do grupo ${pool}. Deslize para ver todas as estatísticas.`}>
+      <Text style={s.title}>{general || data.format === 'league' ? 'Classificação geral' : `Grupo ${pool}`}</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator accessibilityLabel={`${general || data.format === 'league' ? 'Tabela geral' : `Tabela do grupo ${pool}`}. Deslize para ver todas as estatísticas.`}>
         <View style={{ minWidth: 530 }}>
           <View style={[s.row, s.header]}>
             <Text style={s.position}>#</Text><Text style={[s.team, s.label]}>Time</Text>
             {['PTS', 'J', 'V', 'E', 'D', 'GP', 'GC', 'SG'].map(label => <Text key={label} style={[s.number, s.label, label === 'PTS' && s.points]}>{label}</Text>)}
           </View>
-          {data.standings.filter(row => row.pool === pool).map((row, index) => {
+          {table.filter(row => row.pool === pool).map((row, index) => {
             const name = data.entries.find(e => e.club_id === row.club_id)?.name ?? 'Time';
-            const matches = data.matches.filter(m => m.stage === 'groups' && m.pool === pool && m.home_score !== null && (m.home_id === row.club_id || m.away_id === row.club_id));
-            const wins = matches.filter(m => m.home_id === row.club_id ? m.home_score! > m.away_score! : m.away_score! > m.home_score!).length;
-            const draws = matches.filter(m => m.home_score === m.away_score).length;
+            const { wins, draws, losses } = row;
             const balance = row.goals_for - row.goals_against;
-            const values = [row.points, row.played, wins, draws, matches.length - wins - draws, row.goals_for, row.goals_against, balance > 0 ? `+${balance}` : balance];
-            return <Pressable key={row.club_id} accessibilityRole="button" accessibilityLabel={`${index + 1}º, ${name}, ${row.points} pontos, ${row.played} jogos, ${wins} vitórias, ${draws} empates, ${matches.length - wins - draws} derrotas, saldo ${balance}. Ver time.`} onPress={() => router.push({ pathname: '/championships/team', params: { championshipId: data.id, clubId: row.club_id } })} style={({ pressed }) => [s.row, index < 2 && s.qualifying, pressed && { opacity: 0.65 }]}>
+            const values = [row.points, row.played, wins, draws, losses, row.goals_for, row.goals_against, balance > 0 ? `+${balance}` : balance];
+            return <Pressable key={row.club_id} accessibilityRole="button" accessibilityLabel={`${index + 1}º, ${name}, ${row.points} pontos, ${row.played} jogos, ${wins} vitórias, ${draws} empates, ${losses} derrotas, saldo ${balance}. Ver time.`} onPress={() => router.push({ pathname: '/championships/team', params: { championshipId: data.id, clubId: row.club_id } })} style={({ pressed }) => [s.row, !general && data.format === 'groups_knockout' && index < 2 && s.qualifying, pressed && { opacity: 0.65 }]}>
               <Text style={s.position}>{index + 1}</Text>
               <Text style={s.team} numberOfLines={1}>{name}</Text>
               {values.map((value, column) => <Text key={column} style={[s.number, column === 0 && s.points]}>{value}</Text>)}
@@ -31,10 +30,11 @@ export function ChampionshipStandings({ data }: { data: ChampionshipDetail }) {
           })}
         </View>
       </ScrollView>
-      <View style={s.legend}><View style={s.marker} /><Text style={gs.muted}>1º e 2º lugares: vagas no mata-mata</Text></View>
+      {!general && data.format === 'groups_knockout' && <View style={s.legend}><View style={s.marker} /><Text style={gs.muted}>1º e 2º lugares: vagas no mata-mata</Text></View>}
     </View>)}
     {pools.length > 0 && <Text style={gs.muted}>PTS: pontos · J: jogos · V: vitórias · E: empates · D: derrotas · GP: gols pró · GC: gols contra · SG: saldo de gols. Deslize a tabela para ver todas as colunas.</Text>}
-    <ChampionshipStages data={data} matches={data.matches.filter(m => m.stage !== 'groups')} />
+    <Text style={gs.muted}>Vitória: 3 pontos · empate: 1 ponto. Desempates: mais vitórias, mais empates, menos derrotas, mais gols marcados e ordem de inscrição.</Text>
+    {!general && <ChampionshipStages data={data} matches={data.matches.filter(m => m.stage !== 'groups')} />}
   </>;
 }
 
@@ -47,7 +47,8 @@ export function ChampionshipStages({ data, matches }: { data: ChampionshipDetail
   return <>
     {!matches.length && data.format !== 'groups_knockout' && <Empty>As etapas aparecem após o início do campeonato.</Empty>}
     {[...stages].map(([title, games]) => <View key={title} style={{ gap: 12 }}>
-      <Text style={gs.heading}>{title}</Text>
+      <Text style={gs.heading}>{data.format === 'league' ? `Rodada ${games[0].round}` : title}</Text>
+      {data.format === 'league' && <Text style={gs.muted}>{games.length} jogos · {games.filter(game => game.home_score !== null).length} concluídos · {games.filter(game => game.home_score === null).length} pendentes</Text>}
       {games.map(match => <Pressable key={match.id} accessibilityRole="button" accessibilityLabel={`Abrir jogo ${match.sequence} de ${title}`} onPress={() => router.push({ pathname: '/championships/match', params: { championshipId: data.id, matchId: match.id } })} style={({ pressed }) => [s.panel, { padding: 16, gap: 12 }, pressed && { opacity: 0.7 }]}>
         <Text style={gs.muted}>Jogo {match.sequence} · {match.home_score === null ? 'A disputar' : 'Finalizado'}</Text>
         {[match.home_id, match.away_id].map((id, i) => <View key={id} style={gs.row}>
@@ -55,6 +56,7 @@ export function ChampionshipStages({ data, matches }: { data: ChampionshipDetail
           <Text style={[s.score, match.winner_id === id && s.winner]}>{(i === 0 ? match.home_score : match.away_score) ?? '–'}</Text>
         </View>)}
         {match.winner_id && match.home_score === match.away_score && <Text style={gs.badge}>Venceu no desempate: {data.entries.find(e => e.club_id === match.winner_id)?.name}</Text>}
+        {match.home_score === null && <Text style={gs.link}>Abrir jogo</Text>}
       </Pressable>)}
     </View>)}
   </>;

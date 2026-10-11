@@ -5,14 +5,17 @@ import { palette, ui } from './fut-ui';
 import { Empty, gs } from './group-screen';
 import { TrophyIcon } from './trophy-icon';
 import { ChampionshipStages, ChampionshipStandings } from './championship-standings';
+import { LeagueRounds } from './league-rounds';
+import { RankingTabs } from './ranking-tabs';
 
 export const archiveSections = {
   registration: { title: 'Inscrições e início', description: 'Inscrever times e iniciar o campeonato' },
   games: { title: 'Jogos', description: 'Confrontos e etapas do campeonato' },
   results: { title: 'Resultados', description: 'Placares e vencedores de cada partida' },
   teams: { title: 'Times e elencos', description: 'Times inscritos e seus jogadores' },
-  standings: { title: 'Classificação', description: 'Tabela de pontos e etapas do mata-mata' },
-  rankings: { title: 'Artilharia e assistências', description: 'Desempenho dos jogadores' },
+  general_standings: { title: 'Classificação geral', description: 'Pontos e desempenho dos times em todo o campeonato' },
+  standings: { title: 'Classificação', description: 'Tabela de pontos por fase e etapas do campeonato' },
+  rankings: { title: 'Rankings', description: 'Gols, assistências, gols contra, cartões e gols sofridos' },
   trophies: { title: 'Troféus', description: 'Campeões e premiações individuais' },
   information: { title: 'Informações e regulamento', description: 'Temporada, formato e regras da disputa' },
 };
@@ -52,8 +55,10 @@ export function ChampionshipArchiveContent({ data, section }: { data: Championsh
     <Text style={ui.body}>{formats[data.format]} · {data.entries.length}/{data.capacity} times</Text>
     {data.description && <Text style={ui.body}>{data.description}</Text>}
     {data.format === 'cascade' ? <Text style={ui.body}>4 times · final geral única. Ordem: semifinais dos vencedores → final dos vencedores → semifinal dos perdedores → final dos perdedores → final geral. Quem perde a final dos vencedores entra direto na final dos perdedores e descansa durante a semifinal dessa chave. Seeds: 1 × 4 e 2 × 3.</Text>
-      : data.format === 'groups_knockout' ? <Text style={ui.body}>Grupos de quatro, turno único; os dois melhores avançam ao mata-mata. Vitória: 3 pontos, empate: 1. Desempate: saldo de gols, gols marcados e ordem de inscrição.</Text>
+      : data.format === 'league' ? <Text style={ui.body}>Todos contra todos {data.home_and_away ? 'em ida e volta, com mandos invertidos' : 'em jogo único'}, sem final ou mata-mata. {data.home_and_away ? 2 * (data.capacity - 1) : data.capacity - 1} rodadas. O primeiro colocado ao fim de todos os jogos é campeão, e o segundo é vice.</Text>
+      : data.format === 'groups_knockout' ? <Text style={ui.body}>Grupos de quatro, turno único; os dois melhores avançam ao mata-mata. Vitória: 3 pontos, empate: 1. Desempate: mais vitórias, mais empates, menos derrotas, mais gols marcados e ordem de inscrição.</Text>
       : <Text style={ui.body}>Eliminação simples: o vencedor de cada partida avança até a final.</Text>}
+    <Text style={gs.muted}>Classificação geral: vitória vale 3 pontos e empate vale 1. Desempates: mais vitórias, mais empates, menos derrotas e mais gols marcados; persistindo o empate, ordem de inscrição. Resultados empatados contam como empate na tabela geral, inclusive em jogos eliminatórios.</Text>
     <Text style={gs.muted}>A ordem de inscrição define as seeds. Nos jogos eliminatórios, o vencedor do desempate avança quando o placar termina igual.</Text>
   </View>;
   if (section === 'teams') return <>{!data.entries.length && <Empty>Nenhum time inscrito.</Empty>}{data.entries.map(entry => <Pressable key={entry.id} accessibilityRole="button" accessibilityLabel={`Ver jogadores do ${entry.name}`} onPress={() => router.push({ pathname: '/championships/team', params: { championshipId: data.id, clubId: entry.club_id } })} style={({ pressed }) => [gs.card, gs.row, pressed && { opacity: 0.7 }]}>
@@ -61,17 +66,19 @@ export function ChampionshipArchiveContent({ data, section }: { data: Championsh
     <Text style={gs.link} accessible={false}>›</Text>
   </Pressable>)}</>;
   if (section === 'games' || section === 'results') {
+    if (data.format === 'league') return <LeagueRounds key={`${data.id}-${section}`} data={data} mode={section} />;
     const matches = data.matches.filter(match => section === 'results' ? match.home_score !== null : match.home_score === null);
     return matches.length ? <ChampionshipStages data={data} matches={matches} /> : <Empty>Nenhuma partida registrada.</Empty>;
   }
+  if (section === 'general_standings') return <ChampionshipStandings data={data} general />;
   if (section === 'standings') return <ChampionshipStandings data={data} />;
   if (section === 'rankings') return <>
     {!data.statistics_complete && <Text style={ui.error}>Há partidas sem estatísticas completas. Os troféus individuais só são concedidos quando todos os placares têm os gols atribuídos.</Text>}
-    {!data.player_rankings.length && <Empty>Nenhuma estatística registrada.</Empty>}
-    {data.player_rankings.map(player => <View key={player.profile_id} style={gs.card}><Text style={gs.heading}>{player.name}</Text><Text style={gs.badge}>{name(player.club_id)}</Text><Text style={ui.body}>{player.goals} gols · {player.assists} assistências</Text></View>)}
+    <Text style={gs.muted}>Somente partidas finalizadas. Empates dividem a mesma posição. O elenco inscrito recebe o resultado do time; gols sofridos contam apenas para o goleiro indicado em cada partida.</Text>
+    <RankingTabs key={data.id} hideWins hideLosses people={data.player_rankings.map(player => ({ ...player, id: player.profile_id, role: null, is_guest: false, wins: 0, draws: 0, points: 0, team_name: name(player.club_id) }))} />
   </>;
   return <>
-    <Text style={ui.body}>Campeão e vice-campeão para os elencos inscritos. Artilheiro e líder de assistências para os maiores totais, incluindo empates. Premiação concedida ao terminar a final.</Text>
+    <Text style={ui.body}>Campeão e vice-campeão para os elencos inscritos. Artilheiro e líder de assistências para os maiores totais, incluindo empates. Premiação concedida ao encerrar o campeonato.</Text>
     {!data.trophies.length && <Empty>Nenhum troféu registrado.</Empty>}
     {data.trophies.map(trophy => <View key={trophy.id} style={[gs.card, gs.row]}><TrophyIcon category={trophy.category} /><View style={{ flex: 1, gap: 6 }}><Text style={gs.link}>{trophy.name}</Text><Text style={ui.body}>{trophy.title}</Text><Text style={gs.muted}>Marca: {trophy.value}</Text></View></View>)}
   </>;

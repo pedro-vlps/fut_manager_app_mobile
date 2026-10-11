@@ -13,10 +13,11 @@ export default function Create() {
   const [description, setDescription] = useState('');
   const [format, setFormat] = useState<Format>('groups_knockout');
   const [capacity, setCapacity] = useState(8);
+  const [homeAndAway, setHomeAndAway] = useState(false);
   const action = useMutation();
   function create() {
     void action.mutate<{ id: string }>(kind === 'group' ? '/my-groups' : '/championships',
-      kind === 'group' ? { name: name.trim() } : { name: name.trim(), season: season.trim(), description: description.trim() || null, format, capacity },
+      kind === 'group' ? { name: name.trim() } : { name: name.trim(), season: season.trim(), description: description.trim() || null, format, capacity, home_and_away: format === 'league' && homeAndAway },
       result => router.replace(kind === 'group' ? { pathname: '/groups/[groupId]', params: { groupId: result.id } } : { pathname: '/championships/[championshipId]', params: { championshipId: result.id } }));
   }
   return <GroupScreen title="O que vamos criar?" eyebrow="FUTMANAGER · CRIAR" refreshing={false} refresh={() => {}}>
@@ -31,6 +32,13 @@ export default function Create() {
         <TextInput style={ui.input} accessibilityLabel="Descrição do campeonato" placeholder="Descrição (opcional)" placeholderTextColor={palette.muted} value={description} onChangeText={setDescription} maxLength={2000} multiline editable={!action.busy} />
         <Text style={ui.eyebrow}>FORMATO</Text>
         {(Object.keys(formats) as Format[]).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityState={{ checked: format === value }} disabled={action.busy} onPress={() => { setFormat(value); if (value === 'cascade') setCapacity(4); }} style={[ui.input, { borderColor: format === value ? palette.green : palette.border }]}><Text style={gs.link}>{format === value ? '● ' : '○ '}{formats[value]}</Text></Pressable>)}
+        {format === 'league' && <>
+          <Text style={ui.eyebrow}>CONFRONTOS DA LIGA</Text>
+          {([false, true] as const).map(value => <Pressable key={String(value)} accessibilityRole="radio" accessibilityState={{ checked: homeAndAway === value }} disabled={action.busy} onPress={() => setHomeAndAway(value)} style={[ui.input, { borderColor: homeAndAway === value ? palette.green : palette.border }]}>
+            <Text style={gs.link}>{homeAndAway === value ? '● ' : '○ '}{value ? 'Ida e volta' : 'Jogo único'}</Text>
+          </Pressable>)}
+          <Text style={ui.body}>Todos contra todos {homeAndAway ? 'em ida e volta, com mandos invertidos' : 'em jogo único'}. {homeAndAway ? 2 * (capacity - 1) : capacity - 1} rodadas · {capacity * (capacity - 1) / (homeAndAway ? 1 : 2)} jogos. Vitória vale 3 pontos e empate vale 1. O líder ao fim de todas as rodadas é campeão.</Text>
+        </>}
         {format === 'cascade' && <Text style={ui.body}>4 times em chaves de vencedores e perdedores, com final geral única. Quem perde na chave dos vencedores desce; quem perde na dos perdedores é eliminado.</Text>}
         {format === 'groups_knockout' && <Text style={ui.body}>Grupos de 4, todos contra todos em turno único. Os 2 melhores de cada grupo avançam. Com 4 times, os 2 melhores disputam a final.</Text>}
         <Text style={ui.eyebrow}>QUANTIDADE DE TIMES</Text>

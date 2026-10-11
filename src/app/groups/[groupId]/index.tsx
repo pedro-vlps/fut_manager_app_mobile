@@ -77,6 +77,7 @@ function GroupContent({ groupId }: { groupId: string }) {
     {([
       ['history', 'Histórico de eventos', 'Confira as datas e os participantes das peladas.'],
       ['seasons', 'Histórico de temporadas', 'Veja os rankings e registros dos períodos encerrados.'],
+      ['standings', 'Classificação geral', 'Tabela de pontos dos jogadores em todas as peladas.'],
       ['rankings', 'Rankings do grupo', 'Gols, assistências, vitórias e muito mais.'],
       ['members', 'Membros do grupo', 'Conheça quem faz parte da sua turma.'],
     ] as const).map(([page, title, subtitle]) => <Pressable key={page} accessibilityRole="button" onPress={() => router.push({ pathname: `/groups/[groupId]/${page}`, params: { groupId } })} style={({ pressed }) => [gs.card, { opacity: pressed ? 0.65 : 1 }]}>

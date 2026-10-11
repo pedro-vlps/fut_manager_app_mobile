@@ -18,7 +18,7 @@ export type Season = { id: string; number: number; starts_at: string; ends_at: s
 export type SeasonSettings = { mode: 'days' | 'months' | 'fixed'; months: number; day: number; fixed_end: string | null; timezone: string; enabled: boolean; duration_days: number; current_season: Season | null; can_manage: boolean };
 export type SeasonRankings = { season: Season | null; rankings: Ranking[] };
 export type Person = { id: string; name: string; role: string | null; is_guest: boolean };
-export type Ranking = Person & { goals: number; own_goals: number; assists: number; yellow_cards: number; red_cards: number; wins: number; losses: number; goals_conceded: number; matches: number; goalkeeper_matches: number };
+export type Ranking = Person & { goals: number; own_goals: number; assists: number; yellow_cards: number; red_cards: number; wins: number; draws: number; points: number; losses: number; goals_conceded: number; matches: number; goalkeeper_matches: number };
 export const eventStatuses = { draft: 'Rascunho', registration_open: 'Inscrições abertas', registration_closed: 'Inscrições encerradas', in_progress: 'Em andamento', finished: 'Finalizado', cancelled: 'Cancelado' };
 export const roleNames: Record<string, string> = { owner: 'Organizador', admin: 'Administrador', member: 'Jogador' };
 export function eventDate(value: string, timeZone?: string) {
