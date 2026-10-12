@@ -9,6 +9,7 @@ import { LeagueRounds } from './league-rounds';
 import { RankingTabs } from './ranking-tabs';
 
 export const archiveSections = {
+  groups: { title: 'Grupos', description: 'Ver e ajustar a divisão dos times nos grupos' },
   registration: { title: 'Inscrições e início', description: 'Inscrever times e iniciar o campeonato' },
   games: { title: 'Jogos', description: 'Confrontos e etapas do campeonato' },
   results: { title: 'Resultados', description: 'Placares e vencedores de cada partida' },
@@ -27,7 +28,7 @@ export function isArchiveSection(value: string | undefined): value is ArchiveSec
 export function ChampionshipArchiveMenu({ data }: { data: ChampionshipDetail }) {
   const champion = data.entries.find(entry => entry.club_id === data.champion_id);
   const sections = (Object.keys(archiveSections) as ArchiveSection[]).filter(section =>
-    (section !== 'registration' || data.status === 'registration'));
+    (section !== 'registration' || data.status === 'registration') && (section !== 'groups' || data.format === 'groups_knockout'));
   return <>
     <View style={gs.card}>
       <Text style={gs.badge}>{statuses[data.status]} · {data.season}</Text>
@@ -56,7 +57,7 @@ export function ChampionshipArchiveContent({ data, section }: { data: Championsh
     {data.description && <Text style={ui.body}>{data.description}</Text>}
     {data.format === 'cascade' ? <Text style={ui.body}>4 times · final geral única. Ordem: semifinais dos vencedores → final dos vencedores → semifinal dos perdedores → final dos perdedores → final geral. Quem perde a final dos vencedores entra direto na final dos perdedores e descansa durante a semifinal dessa chave. Seeds: 1 × 4 e 2 × 3.</Text>
       : data.format === 'league' ? <Text style={ui.body}>Todos contra todos {data.home_and_away ? 'em ida e volta, com mandos invertidos' : 'em jogo único'}, sem final ou mata-mata. {data.home_and_away ? 2 * (data.capacity - 1) : data.capacity - 1} rodadas. O primeiro colocado ao fim de todos os jogos é campeão, e o segundo é vice.</Text>
-      : data.format === 'groups_knockout' ? <Text style={ui.body}>Grupos de quatro, turno único; os dois melhores avançam ao mata-mata. Vitória: 3 pontos, empate: 1. Desempate: mais vitórias, mais empates, menos derrotas, mais gols marcados e ordem de inscrição.</Text>
+      : data.format === 'groups_knockout' ? <Text style={ui.body}>{data.capacity === 12 ? '4 grupos de 3, turno único; apenas o líder de cada grupo avança. Semifinais: A × B e C × D. Os vencedores disputam a final.' : 'Grupos de quatro, turno único; os dois melhores avançam ao mata-mata.'} Vitória: 3 pontos, empate: 1. Desempate: mais vitórias, mais empates, menos derrotas, mais gols marcados e ordem de inscrição.</Text>
       : <Text style={ui.body}>Eliminação simples: o vencedor de cada partida avança até a final.</Text>}
     <Text style={gs.muted}>Classificação geral: vitória vale 3 pontos e empate vale 1. Desempates: mais vitórias, mais empates, menos derrotas e mais gols marcados; persistindo o empate, ordem de inscrição. Resultados empatados contam como empate na tabela geral, inclusive em jogos eliminatórios.</Text>
     <Text style={gs.muted}>A ordem de inscrição define as seeds. Nos jogos eliminatórios, o vencedor do desempate avança quando o placar termina igual.</Text>

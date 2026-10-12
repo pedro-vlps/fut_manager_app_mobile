@@ -7,6 +7,7 @@ import { useApiResource } from '@/hooks/use-api-resource';
 import { ChampionshipDetail, matchLabel } from '@/services/championships';
 import { ChampionshipRegistration } from '@/components/championship-registration';
 import { LeagueRounds } from '@/components/league-rounds';
+import { ChampionshipGroups } from '@/components/championship-groups';
 
 export default function ChampionshipHistory() {
   const params = useLocalSearchParams<{ championshipId?: string; section?: string }>();
@@ -21,6 +22,7 @@ export default function ChampionshipHistory() {
       <Button onPress={() => router.dismissTo({ pathname: '/championships/[championshipId]', params: { championshipId: data.id } })}>Menu do campeonato</Button>
       {!valid ? <Text style={ui.error}>Seção não encontrada. Volte ao menu e escolha uma opção.</Text>
         : section === 'registration' ? <ChampionshipRegistration data={data} update={resource.update} />
+        : section === 'groups' && data.format === 'groups_knockout' ? <ChampionshipGroups key={data.id} data={data} update={resource.update} />
         : section === 'games' && data.format === 'league' ? <>
           <Text style={gs.muted}>Cada time joga uma vez por rodada. Você pode abrir e registrar qualquer jogo pendente, de qualquer rodada.</Text>
           <LeagueRounds key={data.id} data={data} />

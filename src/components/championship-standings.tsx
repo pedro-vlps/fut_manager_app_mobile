@@ -22,7 +22,7 @@ export function ChampionshipStandings({ data, general = false }: { data: Champio
             const { wins, draws, losses } = row;
             const balance = row.goals_for - row.goals_against;
             const values = [row.points, row.played, wins, draws, losses, row.goals_for, row.goals_against, balance > 0 ? `+${balance}` : balance];
-            return <Pressable key={row.club_id} accessibilityRole="button" accessibilityLabel={`${index + 1}º, ${name}, ${row.points} pontos, ${row.played} jogos, ${wins} vitórias, ${draws} empates, ${losses} derrotas, saldo ${balance}. Ver time.`} onPress={() => router.push({ pathname: '/championships/team', params: { championshipId: data.id, clubId: row.club_id } })} style={({ pressed }) => [s.row, !general && data.format === 'groups_knockout' && index < 2 && s.qualifying, pressed && { opacity: 0.65 }]}>
+            return <Pressable key={row.club_id} accessibilityRole="button" accessibilityLabel={`${index + 1}º, ${name}, ${row.points} pontos, ${row.played} jogos, ${wins} vitórias, ${draws} empates, ${losses} derrotas, saldo ${balance}. Ver time.`} onPress={() => router.push({ pathname: '/championships/team', params: { championshipId: data.id, clubId: row.club_id } })} style={({ pressed }) => [s.row, !general && data.format === 'groups_knockout' && index < (data.capacity === 12 ? 1 : 2) && s.qualifying, pressed && { opacity: 0.65 }]}>
               <Text style={s.position}>{index + 1}</Text>
               <Text style={s.team} numberOfLines={1}>{name}</Text>
               {values.map((value, column) => <Text key={column} style={[s.number, column === 0 && s.points]}>{value}</Text>)}
@@ -30,7 +30,7 @@ export function ChampionshipStandings({ data, general = false }: { data: Champio
           })}
         </View>
       </ScrollView>
-      {!general && data.format === 'groups_knockout' && <View style={s.legend}><View style={s.marker} /><Text style={gs.muted}>1º e 2º lugares: vagas no mata-mata</Text></View>}
+      {!general && data.format === 'groups_knockout' && <View style={s.legend}><View style={s.marker} /><Text style={gs.muted}>{data.capacity === 12 ? '1º lugar: vaga na semifinal' : '1º e 2º lugares: vagas no mata-mata'}</Text></View>}
     </View>)}
     {pools.length > 0 && <Text style={gs.muted}>PTS: pontos · J: jogos · V: vitórias · E: empates · D: derrotas · GP: gols pró · GC: gols contra · SG: saldo de gols. Deslize a tabela para ver todas as colunas.</Text>}
     <Text style={gs.muted}>Vitória: 3 pontos · empate: 1 ponto. Desempates: mais vitórias, mais empates, menos derrotas, mais gols marcados e ordem de inscrição.</Text>

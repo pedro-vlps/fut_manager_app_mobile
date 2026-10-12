@@ -7,7 +7,7 @@ export type ClubPlayer = { id: string; name: string; status: 'pending' | 'accept
 export type Club = { id: string; name: string; owner_id: string; members: ClubPlayer[] };
 export type Invitation = { id: string; club_id: string; club_name: string };
 export type Championship = { id: string; code: string; name: string; season: string; description: string | null; owner_id: string; format: Format; capacity: number; home_and_away: boolean; status: keyof typeof statuses; champion_id: string | null };
-export type Entry = { id: string; club_id: string; name: string; seed: number; players: ClubPlayer[] };
+export type Entry = { id: string; club_id: string; name: string; seed: number; pool: string | null; players: ClubPlayer[] };
 export type ChampionshipMatch = { id: string; sequence: number; stage: 'league' | 'groups' | 'knockout' | 'winners' | 'losers' | 'grand_final'; round: number; pool: string | null; home_id: string; away_id: string; home_score: number | null; away_score: number | null; winner_id: string | null; home_goalkeeper_id: string | null; away_goalkeeper_id: string | null; statistics_complete: boolean; actions: (MatchAction & { presence_id: string })[] };
 export type Standing = { club_id: string; pool: string; played: number; points: number; wins: number; draws: number; losses: number; goals_for: number; goals_against: number; seed: number };
 export type PlayerRanking = { profile_id: string; name: string; club_id: string; goals: number; assists: number; own_goals: number; yellow_cards: number; red_cards: number; losses: number; goals_conceded: number; matches: number; goalkeeper_matches: number };
@@ -20,7 +20,7 @@ export function matchLabel(match: ChampionshipMatch, championship?: Pick<Champio
   if (match.stage === 'losers') return match.round === 1 ? 'Semifinal dos perdedores' : 'Final dos perdedores';
   if (match.stage === 'grand_final') return 'Final geral';
   if (championship) {
-    const entrants = championship.format === 'groups_knockout' ? championship.capacity / 2 : championship.capacity;
+    const entrants = championship.format === 'groups_knockout' ? (championship.capacity === 12 ? 4 : championship.capacity / 2) : championship.capacity;
     const remaining = entrants / 2 ** (match.round - 1);
     if (remaining === 16) return 'Oitavas de final';
     if (remaining === 8) return 'Quartas de final';

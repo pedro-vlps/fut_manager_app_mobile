@@ -31,6 +31,7 @@ export function ChampionshipRegistration({ data, update }: { data: ChampionshipD
     {data.owner_id === session?.profile.id && <View style={gs.card}>
       <Text style={gs.heading}>Iniciar campeonato</Text>
       <Text style={ui.body}>Preencha as {data.capacity} vagas para iniciar a disputa.</Text>
+      {data.format === 'groups_knockout' && <Button onPress={() => router.push({ pathname: '/championships/history', params: { championshipId: data.id, section: 'groups' } })}>Conferir e editar grupos</Button>}
       <Button loading={action.busy} disabled={data.entries.length !== data.capacity || (data.format === 'cascade' && data.capacity !== 4)} onPress={() => void action.mutate<ChampionshipDetail>(`/championships/${data.id}/start`, undefined, update)}>Encerrar inscrições e iniciar campeonato</Button>
     </View>}
   </>;
