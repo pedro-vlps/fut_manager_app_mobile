@@ -19,7 +19,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/fut-manager-icon.png"
     },
     "plugins": [
       "expo-router",
@@ -38,6 +38,14 @@
     },
     "extra": {
       "router": {}
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "enabled": false
     }
   }
 }

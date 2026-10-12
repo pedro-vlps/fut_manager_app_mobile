@@ -31,7 +31,9 @@ ordem de inscrição. Placares empatados contam como empate, inclusive no mata-m
 Requer as migrations `021_league_championships.sql` e `022_league_home_and_away.sql` na API.
 
 No menu da pelada, **Classificação geral** mostra os jogadores e convidados por pontos
-acumulados em todas as temporadas, com os mesmos desempates e gols individuais.
+da temporada atual, com os mesmos desempates e gols individuais. Sem temporadas
+ativas, os pontos são acumulados. O primeiro lugar recebe Campeão da temporada
+no encerramento; empates em todos os critérios compartilham o troféu.
 Somente partidas finalizadas de eventos não cancelados contam. Jogadores sem jogos
 não aparecem; empates completos dividem a posição.
 
@@ -178,3 +180,43 @@ estado pelo botão Atualizar; a tela também atualiza ao retornar à navegação
 
 O histórico contém somente eventos encerrados. Nele, partidas, placares, súmulas
 e jogadores são somente para consulta, sem controles de início ou edição.
+
+## Distribuição Android e PWA no Railway
+
+`npm run build:apk` gera um APK assinado no EAS com o perfil `apk` e canal
+`production`. O aplicativo verifica atualizações ao abrir e aplica uma atualização
+baixada na abertura seguinte, sem reiniciar uma partida em andamento.
+`npm run update:android -- --message "Descrição da mudança"` publica alterações de
+JavaScript e imagens para esse canal. A URL da API deve ser a mesma usada no build:
+configure `EXPO_PUBLIC_API_URL=ENDERECO_PRIVADO` no ambiente
+`production` do Expo antes de publicar updates. SDK 55+ exige `--environment`,
+que está incluído no script. EAS Update usa as variáveis do ambiente remoto;
+`build.env` de `eas.json` não substitui essa configuração na publicação de updates.
+A política `fingerprint` impede updates destinados a componentes nativos diferentes.
+Alterar SDK, módulos nativos ou permissões exige um novo APK, assinado com a mesma
+chave. O plano do Expo possui limites de build e de distribuição de updates.
+
+`npm run build:pwa` exporta `dist/`, com manifesto, ícones e suporte à instalação
+no iPhone. O padrão da API web é `/api`; o Caddy encaminha essas requisições à API
+sem exigir CORS entre site e servidor. Para hospedar os arquivos sem esse proxy,
+configure `EXPO_PUBLIC_API_URL` com a URL HTTPS da API antes do export e adicione
+a origem do site a `FUT_MANAGER_CORS_ORIGINS` na API.
+
+No Railway, crie um serviço usando este repositório (diretório raiz do projeto
+mobile). `railway.json` seleciona o Dockerfile, e o healthcheck é `/health`.
+Gere um domínio público em Networking, usando a porta `8080` (ou `PORT` definido
+pelo Railway). HTTPS é fornecido pelo Railway. A variável de execução opcional
+`API_UPSTREAM` troca o servidor do proxy; o padrão é
+`ENDERECO_PRIVADO`, sem caminho adicional.
+Não é necessário definir build/start command manualmente.
+
+No Safari do iPhone, abra o domínio e use Compartilhar → Adicionar à Tela de Início.
+Não há assinatura nativa nem necessidade de conta de desenvolvedor Apple para
+essa instalação web. Após cada publicação do site, fechar e abrir o PWA carrega
+a versão nova; a instalação permanece. A atualização não recarrega partidas em
+andamento. O app precisa de internet para login, consultar e registrar dados.
+O service worker guarda apenas a página de aviso de falta de conexão, sem
+armazenar tokens, respostas da API ou dados dos jogadores.
+
+O servidor da API precisa estar atualizado com o código e migrations antes de
+usar os novos recursos no APK/PWA. Gerar o frontend não publica a API.

@@ -1,0 +1,24 @@
+{
+    auto_https off
+    admin off
+}
+:{$PORT:8080} {
+    encode zstd gzip
+    handle /health {
+        respond "ok" 200
+    }
+    handle_path /api/* {
+        reverse_proxy {$API_UPSTREAM} {
+            header_up Host {upstream_hostport}
+        }
+    }
+    handle {
+        root * /srv
+        route {
+            try_files {path} {path}.html {path}/index.html /index.html
+            @fresh path *.html /sw.js /register-sw.js /manifest.webmanifest
+            header @fresh Cache-Control "no-store"
+            file_server
+        }
+    }
+}
