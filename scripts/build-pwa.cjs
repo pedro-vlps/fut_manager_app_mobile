@@ -16,7 +16,7 @@ async function main() {
   }
   const result = spawnSync(process.execPath, [require.resolve('expo/bin/cli'), 'export', '--platform', 'web'], {
     cwd: projectRoot, stdio: 'inherit',
-    env: { ...process.env, EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL || '/api' },
+    env: { ...process.env, EXPO_PUBLIC_API_URL: '/api', EAS_PROJECT_ID: '', EAS_UPDATE_URL: '', ANDROID_APPLICATION_ID: '' },
   });
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;

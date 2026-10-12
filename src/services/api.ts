@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === 'android' ? '' : '')).replace(/\/$/, '');
+// Browser requests always use the same origin; only the server knows the upstream.
+export const API_URL = (Platform.OS === 'web' ? '/api' : process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 export type Profile = { id: string; name: string; email: string; positions: Record<string, string[]> };
 export type Session = { access_token: string; profile: Profile };
 export type Group = { id: string; code: string; name: string; description: string | null; role: 'owner' | 'admin' | 'member' };
@@ -11,6 +11,7 @@ export class ApiError extends Error {
 }
 
 export async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
+  if (!API_URL) throw new Error('O endereço do servidor não foi configurado para esta plataforma.');
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {

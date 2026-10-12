@@ -62,10 +62,11 @@ Após o login, a home lista os grupos criados pelo usuário e aqueles em que ele
 Perfis legados com senha `RESET_REQUIRED` precisam ter uma senha definida na API.
 
 Inicie a API na porta 8000 (`docker compose up --build` no projeto da API).
-O mobile usa `ENDERECO_PRIVADO` no emulador Android e
-`ENDERECO_PRIVADO` na web/iOS Simulator. Para celular físico ou outra API,
-copie `.env.example` para `.env` e configure `EXPO_PUBLIC_API_URL` com o IP
-do computador na rede local. Recarregue o app após mudar essa variável.
+Na web, o aplicativo acessa somente `/api`, no mesmo domínio do site.
+O servidor encaminha as requisições ao destino definido em `API_UPSTREAM`,
+configurado no painel do provedor ou em um arquivo `.env` ignorado pelo Git.
+O build web não precisa da URL do servidor nem recebe credenciais do banco.
+Para uma execução nativa futura, defina `EXPO_PUBLIC_API_URL` no ambiente privado.
 
 Execute `npm run android` ou `npm run web`. A sessão fica em memória:
 fechar/recarregar completamente o aplicativo exige novo login. Senhas não são
@@ -181,42 +182,49 @@ estado pelo botão Atualizar; a tela também atualiza ao retornar à navegação
 O histórico contém somente eventos encerrados. Nele, partidas, placares, súmulas
 e jogadores são somente para consulta, sem controles de início ou edição.
 
-## Distribuição Android e PWA no Railway
+## Publicação do site/PWA
 
-`npm run build:apk` gera um APK assinado no EAS com o perfil `apk` e canal
-`production`. O aplicativo verifica atualizações ao abrir e aplica uma atualização
-baixada na abertura seguinte, sem reiniciar uma partida em andamento.
-`npm run update:android -- --message "Descrição da mudança"` publica alterações de
-JavaScript e imagens para esse canal. A URL da API deve ser a mesma usada no build:
-configure `EXPO_PUBLIC_API_URL=ENDERECO_PRIVADO` no ambiente
-`production` do Expo antes de publicar updates. SDK 55+ exige `--environment`,
-que está incluído no script. EAS Update usa as variáveis do ambiente remoto;
-`build.env` de `eas.json` não substitui essa configuração na publicação de updates.
-A política `fingerprint` impede updates destinados a componentes nativos diferentes.
-Alterar SDK, módulos nativos ou permissões exige um novo APK, assinado com a mesma
-chave. O plano do Expo possui limites de build e de distribuição de updates.
+`npm run build:pwa` exporta `dist/` com manifesto, ícones e suporte à instalação.
+O navegador utiliza apenas `/api`, no mesmo domínio do site. A URL do destino
+não é incorporada ao JavaScript; somente o servidor recebe `API_UPSTREAM`.
+Não coloque credenciais ou parâmetros de banco em variáveis `EXPO_PUBLIC_*`.
 
-`npm run build:pwa` exporta `dist/`, com manifesto, ícones e suporte à instalação
-no iPhone. O padrão da API web é `/api`; o Caddy encaminha essas requisições à API
-sem exigir CORS entre site e servidor. Para hospedar os arquivos sem esse proxy,
-configure `EXPO_PUBLIC_API_URL` com a URL HTTPS da API antes do export e adicione
-a origem do site a `FUT_MANAGER_CORS_ORIGINS` na API.
+No Railway, use este repositório como serviço, na raiz do projeto.
+`railway.json` seleciona o Dockerfile e o healthcheck `/health`.
+Defina `API_UPSTREAM` no painel do serviço web com o destino da API, sem `/api`
+no final. O servidor falha explicitamente se essa variável não estiver definida,
+evita escolher um servidor por padrão e omite valores na mensagem de configuração ausente.
+A porta padrão é `8080`, ou a variável `PORT` fornecida pelo provedor.
+As credenciais de PostgreSQL são configuradas exclusivamente no serviço da API.
+Não é necessário definir comandos de build ou inicialização manualmente.
 
-No Railway, crie um serviço usando este repositório (diretório raiz do projeto
-mobile). `railway.json` seleciona o Dockerfile, e o healthcheck é `/health`.
-Gere um domínio público em Networking, usando a porta `8080` (ou `PORT` definido
-pelo Railway). HTTPS é fornecido pelo Railway. A variável de execução opcional
-`API_UPSTREAM` troca o servidor do proxy; o padrão é
-`ENDERECO_PRIVADO`, sem caminho adicional.
-Não é necessário definir build/start command manualmente.
+No iPhone, abra o domínio no Safari e use Compartilhar → Adicionar à Tela de Início.
+No Android, use a opção de instalar no navegador. A mesma publicação atende
+celulares e computadores. Reabrir o PWA carrega as alterações publicadas;
+a atualização não recarrega uma partida em andamento. Consultar e registrar dados
+exige internet. O service worker guarda somente o aviso de falta de conexão.
 
-No Safari do iPhone, abra o domínio e use Compartilhar → Adicionar à Tela de Início.
-Não há assinatura nativa nem necessidade de conta de desenvolvedor Apple para
-essa instalação web. Após cada publicação do site, fechar e abrir o PWA carrega
-a versão nova; a instalação permanece. A atualização não recarrega partidas em
-andamento. O app precisa de internet para login, consultar e registrar dados.
-O service worker guarda apenas a página de aviso de falta de conexão, sem
-armazenar tokens, respostas da API ou dados dos jogadores.
+## Configurações privadas e execução nativa futura
 
-O servidor da API precisa estar atualizado com o código e migrations antes de
-usar os novos recursos no APK/PWA. Gerar o frontend não publica a API.
+`.env.example` contém somente nomes de variáveis e campos vazios.
+Os arquivos `.env`, chaves, certificados, dumps e artefatos são ignorados pelo Git
+e excluídos do contexto Docker. Não adicione os valores reais aos exemplos ou README.
+
+A execução web funciona sem uma conta Expo configurada. Se voltar a usar APK,
+forneça `EXPO_PUBLIC_API_URL`, `ANDROID_APPLICATION_ID`, `EAS_PROJECT_ID` e
+`EAS_UPDATE_URL` pelo ambiente privado/EAS. `app.config.ts` lê esses valores e
+nenhum projeto ou endpoint EAS está fixado no `app.json`.
+As atualizações nativas ficam desativadas quando não há um endpoint configurado.
+As configurações públicas necessárias à execução nativa aparecem no aplicativo
+compilado; credenciais de banco e tokens privados nunca devem ser usados nelas.
+
+## Revisão antes de enviar ao GitHub
+
+Verifique `git diff` e confirme que arquivos privados continuam ignorados.
+A remoção de um valor nos arquivos atuais não remove commits antigos.
+Informações já publicadas precisam de tratamento separado no histórico;
+credenciais expostas também precisam ser substituídas no provedor.
+
+A revisão automática `python scripts/check_private_config.py` rejeita arquivos
+privados, endpoints de implantação e credenciais fixas antes de publicar.
+O workflow do GitHub repete essa revisão e usa Gitleaks com saída redigida.
