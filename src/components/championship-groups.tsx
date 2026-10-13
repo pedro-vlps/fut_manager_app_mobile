@@ -15,7 +15,7 @@ export function ChampionshipGroups({ data, update }: { data: ChampionshipDetail;
   const size = data.capacity === 12 ? 3 : 4;
   const pools = Array.from({ length: data.capacity / size }, (_, i) => String.fromCharCode(65 + i));
   const assignments = draft ?? Object.fromEntries(data.entries.map(entry => [entry.club_id, entry.pool ?? String.fromCharCode(65 + Math.floor((entry.seed - 1) / size))]));
-  const editable = data.owner_id === session?.profile.id && data.status !== 'finished' && !data.matches.some(match => match.home_score !== null || match.actions.length > 0 || match.home_goalkeeper_id || match.away_goalkeeper_id);
+  const editable = data.owner_id === session?.profile.id && data.status !== 'finished' && !data.matches.some(match => match.home_score !== null || match.actions.length > 0 || !!match.started_at || match.home_goalkeeper_override || match.away_goalkeeper_override);
   const complete = data.entries.length === data.capacity;
   function choose(id: string) {
     setSaved(false);
@@ -37,6 +37,7 @@ export function ChampionshipGroups({ data, update }: { data: ChampionshipDetail;
     </View>)}
     {action.error && <Text accessibilityRole="alert" style={ui.error}>{action.error}</Text>}
     {saved && <Text accessibilityRole="alert" style={gs.success}>Grupos salvos.</Text>}
+    {editable && <Button loading={action.busy} disabled={!complete} onPress={() => void action.mutate<ChampionshipDetail>(`/championships/${data.id}/groups/draw`, {}, result => { update(result); setDraft(null); setSelected(null); setSaved(true); })}>Sortear grupos aleatoriamente</Button>}
     {editable && draft && <>
       <Text style={gs.muted}>Há alterações ainda não salvas.</Text>
       <Button loading={action.busy} disabled={!complete} onPress={() => void action.mutate<ChampionshipDetail>(`/championships/${data.id}/groups`, { groups: pools.map(pool => data.entries.filter(entry => assignments[entry.club_id] === pool).map(entry => entry.club_id)) }, result => { update(result); setDraft(null); setSelected(null); setSaved(true); })}>Salvar grupos</Button>

@@ -5,6 +5,7 @@ import { Brand, Button, palette, ui } from '@/components/fut-ui';
 import { useAuth } from '@/contexts/auth';
 import { PositionSelector, Positions } from '@/components/position-selector';
 import { request } from '@/services/api';
+import { passwordRequirements, validNewPassword } from '@/services/password-policy';
 
 export default function LoginScreen() {
   const { signIn, notice } = useAuth();
@@ -22,8 +23,12 @@ export default function LoginScreen() {
 
   async function submit() {
     if (submitting.current) return;
-    if (registering && (!name.trim() || password.length < 8 || password.length > 128 || !Object.values(positions).some(p => p.length))) {
-      setError('Informe seu nome, uma senha de 8 a 128 caracteres e pelo menos uma posição.');
+    if (registering && (!name.trim() || !Object.values(positions).some(p => p.length))) {
+      setError('Informe seu nome e pelo menos uma posição.');
+      return;
+    }
+    if (registering && !validNewPassword(password)) {
+      setError('Sua senha precisa cumprir todos os critérios abaixo.');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !password) {
@@ -63,10 +68,18 @@ export default function LoginScreen() {
               <TextInput ref={passwordInput} accessibilityLabel="Senha" style={[ui.input, styles.password]} placeholder="Sua senha" placeholderTextColor={palette.muted} value={password} onChangeText={setPassword} secureTextEntry={!visible} autoCapitalize="none" autoCorrect={false} autoComplete="current-password" textContentType="password" returnKeyType="go" onSubmitEditing={submit} editable={!busy} />
               <Pressable accessibilityRole="button" accessibilityLabel={visible ? 'Ocultar senha' : 'Mostrar senha'} onPress={() => setVisible(!visible)} style={styles.visibility}><Text style={styles.visibilityText}>{visible ? 'Ocultar' : 'Mostrar'}</Text></Pressable>
             </View></View>
+            {registering && <View style={{ gap: 6 }}>
+              <Text style={styles.label}>Critérios da senha</Text>
+              {passwordRequirements(password).map(requirement => <Text key={requirement.id}
+                accessibilityLabel={`${requirement.satisfied ? 'Atendido' : 'Pendente'}: ${requirement.label}`}
+                style={[ui.body, { color: requirement.satisfied ? palette.green : palette.muted }]}>
+                {requirement.satisfied ? '✓' : '○'} {requirement.label}
+              </Text>)}
+            </View>}
             {(error || notice) && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={ui.error}>{error || notice}</Text>}
             {registering && <PositionSelector value={positions} onChange={setPositions} disabled={busy} />}
             {!!success && <Text accessibilityLiveRegion="polite" style={ui.body}>{success}</Text>}
-            <Button onPress={submit} loading={busy} disabled={registering && !Object.values(positions).some(p => p.length)}>{registering ? 'Criar perfil' : 'Entrar'}</Button>
+            <Button onPress={submit} loading={busy} disabled={registering && (!validNewPassword(password) || !Object.values(positions).some(p => p.length))}>{registering ? 'Criar perfil' : 'Entrar'}</Button>
             <Pressable accessibilityRole="button" disabled={busy} onPress={() => { setRegistering(!registering); setError(null); setSuccess(''); }} style={styles.visibility}>
               <Text style={[styles.visibilityText, { textAlign: 'center' }]}>{registering ? 'Já tenho conta · Entrar' : 'Ainda não tenho conta · Criar perfil'}</Text>
             </Pressable>

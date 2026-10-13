@@ -34,7 +34,7 @@ export function LeagueRounds({ data, mode = 'games' }: { data: ChampionshipDetai
   if (!rounds.length) return <Empty>As rodadas aparecem após o início da liga.</Empty>;
 
   return <View style={{ gap: 20 }}>
-    {data.home_and_away && <Text style={gs.badge}>{rounds[selected] <= data.capacity - 1 ? 'TURNO DE IDA' : 'TURNO DE VOLTA'}</Text>}
+    {data.home_and_away && <Text style={gs.badge}>{rounds[selected] <= (data.capacity % 2 ? data.capacity : data.capacity - 1) ? 'TURNO DE IDA' : 'TURNO DE VOLTA'}</Text>}
     <Text style={gs.muted}>Toque em uma rodada ou deslize os jogos para o lado para avançar ou voltar.</Text>
     <ScrollView ref={tabs} horizontal showsHorizontalScrollIndicator={false}
       onLayout={event => { viewport.current = event.nativeEvent.layout.width; revealTab(selectedRef.current); }}

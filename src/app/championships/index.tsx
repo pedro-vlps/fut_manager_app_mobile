@@ -8,10 +8,10 @@ import { Championship, formats, statuses } from '@/services/championships';
 import { ChampionshipCodeSearch } from '@/components/championship-code-search';
 
 export default function Championships() {
-  const resource = useApiResource<Championship[]>('/championships');
+  const resource = useApiResource<Championship[]>('/championship-feed');
   const [query, setQuery] = useState('');
   const filtered = resource.data?.filter(item => `${item.name} ${item.season}`.toLocaleLowerCase('pt-BR').includes(query.trim().toLocaleLowerCase('pt-BR')));
-  return <GroupScreen title="Campeonatos" eyebrow="FUTMANAGER · TEMPORADAS" subtitle="Encontre uma edição e inscreva seu time." {...resource} refresh={() => void resource.refresh()}>
+  return <GroupScreen title="Feed de campeonatos" eyebrow="FUTMANAGER · TEMPORADAS" subtitle="Acompanhe jogos, resultados e estatísticas de qualquer campeonato, mesmo sem inscrever um time." {...resource} refresh={() => void resource.refresh()}>
     <Button onPress={() => router.push('/create')}>Criar grupo ou campeonato</Button>
     <Button onPress={() => router.push('/clubs')}>Meus times e convites</Button>
     <ChampionshipCodeSearch />

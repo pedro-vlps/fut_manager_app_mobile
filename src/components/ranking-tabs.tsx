@@ -4,7 +4,7 @@ import { palette, ui } from './fut-ui';
 import { Empty, gs } from './group-screen';
 import { Ranking } from '@/services/groups';
 
-type RankingPerson = Ranking & { team_name?: string };
+type RankingPerson = Ranking & { team_name?: string; team_position?: number };
 
 const rankingCategories = [
   ['goals', 'Artilharia'], ['assists', 'Assistências'], ['wins', 'Vitórias'],
@@ -70,12 +70,12 @@ export function RankingTabs({ people, hideWins = false, hideLosses = false }: { 
 
 function RankingList({ people, metric }: { people: RankingPerson[]; metric: Metric }) {
   const rows = [...people].filter(p => metric === 'goals_conceded' ? p.goalkeeper_matches > 0 : p[metric] > 0)
-    .sort((a, b) => (metric === 'goals_conceded' ? a[metric] - b[metric] : b[metric] - a[metric]) || a.name.localeCompare(b.name, 'pt-BR') || a.id.localeCompare(b.id));
+    .sort((a, b) => (metric === 'goals_conceded' ? a[metric] - b[metric] : b[metric] - a[metric]) || (a.team_position !== undefined && b.team_position !== undefined ? a.team_position - b.team_position || a.id.localeCompare(b.id) : a.name.localeCompare(b.name, 'pt-BR') || a.id.localeCompare(b.id)));
   return <>
     {metric === 'goals_conceded' && <Text style={ui.body}>Goleiros com menos gols sofridos no total. O número de partidas como goleiro aparece em cada linha.</Text>}
     {rows.length === 0 && <Empty>Ainda não há estatísticas para esta categoria.</Empty>}
     {rows.map((person, index) => <View key={`${person.is_guest}-${person.id}`} style={[gs.card, gs.row]}>
-      <Text style={gs.badge}>#{rows.findIndex(p => p[metric] === person[metric]) + 1}</Text>
+      <Text style={gs.badge}>#{person.team_position !== undefined ? index + 1 : rows.findIndex(p => p[metric] === person[metric]) + 1}</Text>
       <View style={{ flex: 1, gap: 5 }}><Text style={gs.heading}>{person.name}</Text><Text style={gs.muted}>{person.team_name ? `${person.team_name} · ` : ''}{person.is_guest ? 'Convidado · ' : ''}{metric === 'goals_conceded' ? person.goalkeeper_matches : person.matches} partida(s){metric === 'goals_conceded' ? ' como goleiro' : ''}</Text></View>
       <Text style={[ui.title, { color: index === 0 ? palette.green : palette.ink }]}>{person[metric]}</Text>
     </View>)}

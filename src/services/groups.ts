@@ -12,7 +12,7 @@ export type Event = {
 };
 export type NextEvent = Event & { confirmed_count: number; confirmed_players_count: number; confirmed_goalkeepers_count: number; my_presence: Presence | null; can_confirm: boolean; can_change_role: boolean; can_cancel_confirmation: boolean; confirmation_message: string | null };
 export type Overview = { group: Omit<Group, 'role'>; next_event: NextEvent | null; can_manage: boolean };
-export type DiscoveredGroup = { id: string; code: string; name: string; description: string | null; membership: 'active' | 'blocked' | 'none'; request_status: 'pending' | 'approved' | 'rejected' | null };
+export type DiscoveredGroup = { id: string; code: string | null; name: string; description: string | null; membership: 'active' | 'blocked' | 'none'; request_status: 'pending' | 'approved' | 'rejected' | null };
 export type JoinRequest = { id: string; profile_id: string; name: string; created_at: string; status: 'pending' | 'approved' | 'rejected' };
 export type Season = { id: string; number: number; starts_at: string; ends_at: string };
 export type SeasonSettings = { mode: 'days' | 'months' | 'fixed'; months: number; day: number; fixed_end: string | null; timezone: string; enabled: boolean; duration_days: number; current_season: Season | null; can_manage: boolean };

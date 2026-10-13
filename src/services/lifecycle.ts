@@ -5,7 +5,7 @@ export type PlayerRole = 'player' | 'goalkeeper';
 export type Participant = { positions: string[]; presence_id: string; person_id: string; name: string; is_guest: boolean; role: PlayerRole };
 export type Team = { id: string; name: string; color: string | null; players: Participant[] };
 export type Score = { team_id: string; name: string; goals: number; result: 'win' | 'loss' | 'draw' | null };
-export type MatchAction = { id: string; team_id: string; player_name: string; action_type: ActionType; minute: number | null };
+export type MatchAction = { id: string; team_id: string; player_name: string; auto_generated?: boolean; person_id?: string; presence_id?: string; action_type: ActionType; minute: number | null };
 export type Match = { id: string; sequence: number; status: string; advancing_team_id: string | null; scores: Score[]; players: (Participant & { team_id: string; is_temporary: boolean; is_active: boolean })[]; actions: MatchAction[]; timer_elapsed_ms: number; timer_running: boolean };
 export type Lifecycle = {
   event: Event & { min_confirmed_players: number | null; started_at: string | null; finished_at: string | null };

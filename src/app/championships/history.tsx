@@ -7,6 +7,7 @@ import { useApiResource } from '@/hooks/use-api-resource';
 import { ChampionshipDetail, matchLabel } from '@/services/championships';
 import { ChampionshipRegistration } from '@/components/championship-registration';
 import { LeagueRounds } from '@/components/league-rounds';
+import { ChampionshipPunishments } from '@/components/championship-punishments';
 import { ChampionshipGroups } from '@/components/championship-groups';
 
 export default function ChampionshipHistory() {
@@ -21,6 +22,7 @@ export default function ChampionshipHistory() {
     {data && <>
       <Button onPress={() => router.dismissTo({ pathname: '/championships/[championshipId]', params: { championshipId: data.id } })}>Menu do campeonato</Button>
       {!valid ? <Text style={ui.error}>Seção não encontrada. Volte ao menu e escolha uma opção.</Text>
+        : section === 'punishments' ? <ChampionshipPunishments data={data} update={resource.update} />
         : section === 'registration' ? <ChampionshipRegistration data={data} update={resource.update} />
         : section === 'groups' && data.format === 'groups_knockout' ? <ChampionshipGroups key={data.id} data={data} update={resource.update} />
         : section === 'games' && data.format === 'league' ? <>

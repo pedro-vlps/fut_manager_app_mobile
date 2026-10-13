@@ -29,11 +29,20 @@ export function TeamCards({ teams, ratings = {} }: { teams: Team[]; ratings?: Re
   </View>)}</>;
 }
 export function MatchLog({ match, remove, busy }: { match: Pick<Match, 'scores' | 'actions'>; remove?: (id: string) => void; busy: boolean }) {
+  const grouped = new Map<string, { action: Match['actions'][number]; ids: string[] }>();
+  for (const action of match.actions) {
+    const key = `${action.team_id}-${action.presence_id ?? action.person_id ?? action.id}-${action.action_type}-${action.auto_generated ? 'auto' : 'manual'}`;
+    const group = grouped.get(key);
+    if (group) group.ids.push(action.id);
+    else grouped.set(key, { action, ids: [action.id] });
+  }
+  const plural = { goal: 'Gols', assist: 'Assistências', own_goal: 'Gols contra', yellow_card: 'Cartões amarelos', red_card: 'Cartões vermelhos' };
   return <View style={{ gap: 12 }}><Text style={gs.heading}>Súmula</Text>
     {match.actions.length === 0 && <Text style={ui.body}>Nenhum lance registrado nesta partida.</Text>}
-    {match.actions.map(action => <View key={action.id} style={[gs.row, { paddingVertical: 8, borderTopWidth: 1, borderColor: palette.border }]}>
-      <View style={{ flex: 1, gap: 3 }}><Text style={{ color: palette.ink, fontWeight: '600' }}>{actionLabels[action.action_type]} · {action.player_name}</Text><Text style={gs.muted}>{match.scores.find(s => s.team_id === action.team_id)?.name}{action.minute !== null ? ` · ${action.minute} min` : ''}</Text></View>
-      {remove && <Pressable accessibilityRole="button" accessibilityLabel={`Remover ${actionLabels[action.action_type]} de ${action.player_name}`} disabled={busy} onPress={() => remove(action.id)} style={{ padding: 12 }}><Text style={{ color: palette.danger }}>Remover</Text></Pressable>}
+    {[...grouped.values()].map(({ action, ids }) => <View key={action.id} style={[gs.row, { paddingVertical: 8, borderTopWidth: 1, borderColor: palette.border }]}>
+      <View style={{ flex: 1, gap: 3 }}><Text style={{ color: palette.ink, fontWeight: '600' }}>{ids.length}x {ids.length > 1 ? plural[action.action_type] : actionLabels[action.action_type]} · {action.player_name}</Text><Text style={gs.muted}>{match.scores.find(s => s.team_id === action.team_id)?.name}{ids.length === 1 && action.minute !== null ? ` · ${action.minute} min` : ''}</Text></View>
+      {action.auto_generated && <Text style={gs.muted}>Automático · 2º amarelo</Text>}
+      {remove && !action.auto_generated && <Pressable accessibilityRole="button" accessibilityLabel={`Remover ${actionLabels[action.action_type]} de ${action.player_name}`} disabled={busy} onPress={() => remove(ids[ids.length - 1])} style={{ padding: 12 }}><Text style={{ color: palette.danger }}>Remover 1</Text></Pressable>}
     </View>)}
   </View>;
 }

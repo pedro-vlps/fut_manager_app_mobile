@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { ApiError, request } from '@/services/api';
 import { eventDate, eventStatuses, Overview, Presence } from '@/services/groups';
+import { useMutation } from '@/hooks/use-mutation';
 import { Dropdown } from '@/components/dropdown';
 
 export default function GroupPage() {
@@ -15,6 +16,7 @@ export default function GroupPage() {
 }
 
 function GroupContent({ groupId }: { groupId: string }) {
+  const codeAction = useMutation();
   const resource = useApiResource<Overview>(`/my-groups/${groupId}`);
   const { session, expireSession } = useAuth();
   const [busy, setBusy] = useState(false);
@@ -43,7 +45,11 @@ function GroupContent({ groupId }: { groupId: string }) {
   }
   const presence = event?.my_presence;
   return <GroupScreen title={resource.data?.group.name ?? 'Seu grupo'} subtitle={resource.data?.group.description ?? undefined} {...resource}>
-    <Text selectable style={gs.badge}>Código do grupo: {resource.data?.group.code}</Text>
+    {resource.data?.can_manage && <View style={gs.card}>
+      <Text selectable style={gs.badge}>Código do grupo: {resource.data.group.code}</Text>
+      <Button loading={codeAction.busy} onPress={() => void codeAction.mutate<Overview>(`/my-groups/${groupId}/code/rotate`, {}, resource.update)}>Gerar novo código de convite</Button>
+      {codeAction.error && <Text style={ui.error}>{codeAction.error}</Text>}
+    </View>}
     {resource.data?.can_manage && <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/groups/[groupId]/settings', params: { groupId } })} style={gs.card}>
       <View style={gs.row}><Text style={gs.heading}>Configurações do grupo</Text><Text style={gs.link}>→</Text></View>
       <Text style={ui.body}>Defina se o grupo usa temporadas e a duração de cada período.</Text>
