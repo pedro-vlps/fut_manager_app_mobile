@@ -1,6 +1,4 @@
-# Changelog
-
-## v0.3.0
+## v1.1.0
 
 - Added a WO Victory option
 - Added punishments options to the teams on championships
@@ -11,4 +9,12 @@
 - Changed groups/championship policy to admins only and a option to regenerate a code
 - Created a feed to the championship
 - Removed teams limit for league championship type
+
+# Changelog
+
+## v0.0.1
+
+- Implemented basic CRUD routes
+- Created the main tables
+- Implemented basic business rules setup
 
