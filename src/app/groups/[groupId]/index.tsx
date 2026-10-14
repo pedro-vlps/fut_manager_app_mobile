@@ -9,6 +9,8 @@ import { ApiError, request } from '@/services/api';
 import { eventDate, eventStatuses, Overview, Presence } from '@/services/groups';
 import { useMutation } from '@/hooks/use-mutation';
 import { Dropdown } from '@/components/dropdown';
+import { RegistrationWindowInfo } from '@/components/registration-opening';
+import { useRegistrationRefresh } from '@/hooks/use-registration-refresh';
 
 export default function GroupPage() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -26,6 +28,7 @@ function GroupContent({ groupId }: { groupId: string }) {
   const alive = useRef(false);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const event = resource.data?.next_event;
+  useRegistrationRefresh(event, resource.refresh);
   const role = roleChoice?.eventId === event?.id ? roleChoice?.role ?? 'player' : event?.my_presence?.role ?? 'player';
   async function confirm(cancel = false) {
     if (!event || !session || submitting.current) return;
@@ -64,7 +67,8 @@ function GroupContent({ groupId }: { groupId: string }) {
         <Text style={gs.heading}>{event.title}</Text>
         <Text style={[ui.body, { color: palette.ink, fontWeight: '600' }]}>{eventDate(event.scheduled_at)}</Text>
         <Text style={ui.body}>{event.location || 'Local a definir'}</Text>
-        <Text style={gs.badge}>{eventStatuses[event.status]}</Text>
+        <Text style={gs.badge}>{event.status === 'registration_open' && event.registration_opens_at && new Date(event.registration_opens_at) > new Date() ? 'Aguardando abertura das confirmações' : eventStatuses[event.status]}</Text>
+        <RegistrationWindowInfo event={event} />
         <Button onPress={() => router.push({ pathname: '/groups/[groupId]/event', params: { groupId, eventId: event.id } })}>{event.status === 'in_progress' ? 'Acompanhar evento e partidas' : 'Abrir evento · times e partidas'}</Button>
         {event.min_confirmed_goalkeepers != null ? <>
           <Text style={ui.body}>{event.confirmed_players_count}{event.max_confirmed_players != null ? ` de ${event.max_confirmed_players}` : ''} jogadores de linha · {event.confirmed_goalkeepers_count}{event.max_confirmed_goalkeepers != null ? ` de ${event.max_confirmed_goalkeepers}` : ''} goleiros confirmados</Text>

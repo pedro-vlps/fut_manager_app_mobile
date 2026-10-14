@@ -6,14 +6,10 @@ import { useAuth } from '@/contexts/auth';
 import { ApiError, request } from '@/services/api';
 import { Event, eventDate } from '@/services/groups';
 import { Dropdown } from '@/components/dropdown';
-import { nextWeeklyEventDate, parseEventDate } from '@/services/event-time';
+import { nextWeeklyEventDate, parseEventDate, registrationOpeningPayload, registrationOpeningValues, weekdayOptions } from '@/services/event-time';
+import { RegistrationOpeningFields } from '@/components/registration-opening';
 import { operationId, modalityOptions } from '@/services/lifecycle';
 import { ConfirmationFields, confirmationValues, confirmationPayload } from '@/components/confirmation-settings';
-
-const weekdayOptions = [
-  'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
-  'Quinta-feira', 'Sexta-feira', 'Sábado',
-].map((label, day) => ({ value: String(day), label }));
 
 export function EventScheduler({ groupId }: { groupId: string }) {
   const { session, expireSession } = useAuth();
@@ -22,6 +18,7 @@ export function EventScheduler({ groupId }: { groupId: string }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [confirmations, setConfirmations] = useState(() => confirmationValues());
+  const [opening, setOpening] = useState(() => registrationOpeningValues());
   const [recurring, setRecurring] = useState(false);
   const [weekday, setWeekday] = useState('');
   const [busy, setBusy] = useState(false);
@@ -39,9 +36,10 @@ export function EventScheduler({ groupId }: { groupId: string }) {
     if (!scheduled) { setError(recurring ? 'Informe um horário válido, como 15 ou 15:00.' : 'Informe uma data válida e um horário, como 15 ou 15:00.'); return; }
     if (!title.trim()) { setError('Informe o nome do evento.'); return; }
     let slots;
-    try { slots = confirmationPayload(confirmations); }
+    let registration;
+    try { slots = confirmationPayload(confirmations); registration = registrationOpeningPayload(opening, scheduled, zone); }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Revise as vagas.'); return; }
-    const body = { modality, title: title.trim(), scheduled_at: scheduled.toISOString(), ...slots, recurring_weekly: recurring, schedule_timezone: zone };
+    const body = { modality, title: title.trim(), scheduled_at: scheduled.toISOString(), ...slots, ...registration, recurring_weekly: recurring, schedule_timezone: zone };
     const signature = JSON.stringify(body);
     if (pending.current?.signature !== signature) pending.current = { signature, id: operationId() };
     working.current = true; setBusy(true);
@@ -74,10 +72,11 @@ export function EventScheduler({ groupId }: { groupId: string }) {
     ]} />
     <Text style={gs.muted}>{recurring ? 'A primeira ocorrência será no próximo dia escolhido com pelo menos 1 hora de antecedência.' : 'Pode ser hoje, com pelo menos 1 hora de antecedência.'} Fuso horário: {zone}</Text>
     {firstOccurrence && <Text style={ui.body}>Primeiro evento: {eventDate(firstOccurrence.toISOString(), zone)}.</Text>}
+    <RegistrationOpeningFields value={opening} onChange={setOpening} scheduled={recurring ? firstOccurrence : parseEventDate(date, time, zone)} zone={zone} busy={busy} />
     <ConfirmationFields value={confirmations} onChange={setConfirmations} busy={busy} />
     {recurring && <Text style={ui.body}>Ao encerrar o evento, outro será criado no mesmo dia e horário da semana seguinte. Os jogadores precisarão confirmar novamente.</Text>}
     {error ? <Text accessibilityRole="alert" style={ui.error}>{error}</Text> : null}
-    {saved && <Text accessibilityRole="alert" style={gs.success}>{saved.title} agendado para {eventDate(saved.scheduled_at, zone)}. As inscrições estão abertas.</Text>}
+    {saved && <Text accessibilityRole="alert" style={gs.success}>{saved.title} agendado para {eventDate(saved.scheduled_at, zone)}. {saved.registration_opens_at && new Date(saved.registration_opens_at) > new Date() ? `Confirmações abrem em ${eventDate(saved.registration_opens_at, zone)}.` : 'As confirmações estão abertas.'}</Text>}
     <Button onPress={() => void save()} loading={busy}>Agendar evento</Button>
   </View>;
 }

@@ -14,6 +14,7 @@ import { eventDate, eventStatuses } from '@/services/groups';
 import { Dropdown } from '@/components/dropdown';
 import { Lifecycle, modalityOptions } from '@/services/lifecycle';
 import { ConfirmationSettingsForm } from '@/components/confirmation-settings';
+import { RegistrationOpeningForm, RegistrationWindowInfo } from '@/components/registration-opening';
 
 export default function EventPage() {
   const { groupId, eventId, readOnly } = useLocalSearchParams<{ groupId: string; eventId: string; readOnly?: string }>();
@@ -78,7 +79,8 @@ function EventContent({ groupId, eventId, readOnly }: { groupId: string; eventId
     {message && <Text accessibilityRole="alert" style={message.error ? ui.error : gs.success}>{message.text}</Text>}
     {data && <>
       <View style={gs.card}>
-        <Text style={ui.eyebrow}>{eventStatuses[data.event.status]}</Text>
+        <Text style={ui.eyebrow}>{data.event.status === 'registration_open' && data.event.registration_opens_at && new Date(data.event.registration_opens_at) > new Date() ? 'Aguardando abertura das confirmações' : eventStatuses[data.event.status]}</Text>
+        <RegistrationWindowInfo event={data.event} />
         <Button onPress={() => router.push({ pathname: '/groups/[groupId]/rankings', params: { groupId, eventId } })}>Ver ranking do evento</Button>
         {editable && event?.status !== 'in_progress' ? <Dropdown label="Modalidade do evento" placeholder="Escolha a modalidade" value={data.event.modality ?? ''} options={modalityOptions} disabled={disabled} onChange={modality => { void mutate('/modality', { modality }, 'Modalidade atualizada.'); }} /> : <Text style={gs.badge}>{modalityOptions.find(m => m.value === data.event.modality)?.label ?? 'Modalidade não definida'}</Text>}
         <Text style={ui.body}>{separate ? `${playerCount} jogadores de linha e ${keeperCount} goleiros confirmados` : `${data.participants.length} confirmados`} · {data.teams.length} times · mínimo de {minimum} {separate ? `jogadores de linha e ${event?.min_confirmed_goalkeepers} goleiros` : 'jogadores'}</Text>
@@ -96,6 +98,7 @@ function EventContent({ groupId, eventId, readOnly }: { groupId: string; eventId
         <Button loading={busy} disabled={disabled || selectedValid.length !== 2} onPress={() => void mutate('/kickoff', { mode: 'manual', team_ids: selectedValid }, 'Primeira partida iniciada!')}>Iniciar com os dois times escolhidos</Button>
         <Button loading={busy} disabled={disabled} onPress={() => void mutate('/kickoff', { mode: 'random' }, 'Confronto sorteado e partida iniciada!')}>Sortear os dois times iniciais</Button>
       </View>}
+      {editable && event?.status !== 'in_progress' && data.matches.length === 0 && <RegistrationOpeningForm key={`${data.event.id}:${data.event.registration_opens_at}:${data.event.registration_closes_at}`} event={data.event} busy={disabled} submit={body => mutate('/registration-opening', body, 'Abertura das confirmações atualizada.')} />}
       {match && <>
         <View style={gs.card}><Text style={ui.eyebrow}>PARTIDA {match.sequence} · EM ANDAMENTO</Text>
           <MatchTimer match={match} busy={disabled || timerBusy} error={timerError} control={editable ? action => void mutate(`/matches/${match.id}/timer`, { action }, '', true) : undefined} />

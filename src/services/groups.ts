@@ -4,6 +4,8 @@ export type Presence = { id: string; role: 'player' | 'goalkeeper'; status: 'reg
 export type Event = {
   modality: 'campo' | 'futsal' | 'fut7' | null;
   id: string; title: string; location: string | null; scheduled_at: string;
+  registration_opens_at?: string | null; registration_closes_at?: string | null;
+  schedule_timezone?: string; recurring_weekly?: boolean;
   status: 'draft' | 'registration_open' | 'registration_closed' | 'in_progress' | 'finished' | 'cancelled';
   max_confirmed_players: number | null;
   min_confirmed_players: number | null;
