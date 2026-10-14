@@ -5,6 +5,7 @@ import { gs } from '@/components/group-screen';
 import { Dropdown } from '@/components/dropdown';
 import { Choice, styles } from '@/components/event-ui';
 import { ActionType, Match, Team, actionLabels, operationId } from '@/services/lifecycle';
+import { playerLabel } from '@/services/jersey-numbers';
 
 export function ActionForm({ match, busy, submit }: {
   match: Pick<Match, 'scores' | 'players'>; busy: boolean; submit: (body: unknown) => Promise<boolean>;
@@ -24,7 +25,7 @@ export function ActionForm({ match, busy, submit }: {
   return <View style={{ gap: 16 }}>
     <Text style={gs.heading}>Registrar lance</Text>
     <View style={styles.choices}>{match.scores.map(score => <Choice key={score.team_id} selected={teamId === score.team_id} disabled={busy} onPress={() => { setTeamId(score.team_id); setPlayerId(''); }}>{score.name}</Choice>)}</View>
-    <Dropdown key={teamId} label="Quem participou do lance?" placeholder="Selecione o jogador" value={playerId} disabled={busy} options={players.map(p => ({ value: p.presence_id, label: p.name }))} onChange={setPlayerId} />
+    <Dropdown key={teamId} label="Quem participou do lance?" placeholder="Selecione o jogador" value={playerId} disabled={busy} options={players.map(p => ({ value: p.presence_id, label: playerLabel(p) }))} onChange={setPlayerId} />
     <Dropdown label="O que fez?" value={type} disabled={busy} options={Object.entries(actionLabels).map(([value, label]) => ({ value, label }))} onChange={value => setType(value as ActionType)} />
     {type === 'own_goal' && <Text style={ui.body}>Selecione quem fez o gol contra. O gol será somado ao adversário.</Text>}
     <Button onPress={() => void add()} loading={busy} disabled={!players.some(p => p.presence_id === playerId)}>Adicionar {actionLabels[type].toLowerCase()}</Button>
@@ -93,7 +94,7 @@ export function MatchPlayers({ match }: { match: Match }) {
     {match.scores.map(score => <View key={score.team_id} style={{ gap: 4 }}>
       <Text style={gs.badge}>{score.name}</Text>
       {match.players.filter(p => p.team_id === score.team_id).map(p => <Text key={p.presence_id} style={ui.body}>
-        {p.name}{p.role === 'goalkeeper' ? ' · Goleiro' : ''}{p.is_temporary ? ' · Temporário' : ''}{!p.is_active ? ' · Fora nesta partida (sem resultado)' : ''}
+        {playerLabel(p)}{p.role === 'goalkeeper' ? ' · Goleiro' : ''}{p.is_temporary ? ' · Temporário' : ''}{!p.is_active ? ' · Fora nesta partida (sem resultado)' : ''}
       </Text>)}
     </View>)}
   </View>;

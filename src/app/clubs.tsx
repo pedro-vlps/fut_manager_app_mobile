@@ -8,6 +8,8 @@ import { useApiResource } from '@/hooks/use-api-resource';
 import { useMutation } from '@/hooks/use-mutation';
 import { Club, Invitation } from '@/services/championships';
 import { Dropdown } from '@/components/dropdown';
+import { JerseyNumberField } from '@/components/jersey-number-field';
+import { playerLabel } from '@/services/jersey-numbers';
 
 function Team({ club, refresh }: { club: Club; refresh: () => Promise<void> }) {
   const { session } = useAuth();
@@ -16,7 +18,11 @@ function Team({ club, refresh }: { club: Club; refresh: () => Promise<void> }) {
   return <View style={gs.card}>
     <Text style={gs.heading}>{club.name}</Text>
     <Text style={gs.muted}>Goleiro titular: {club.members.find(member => member.id === club.starting_goalkeeper_id)?.name ?? 'Não definido'}</Text>
-    {club.members.map(member => <Text key={member.id} style={ui.body}>{member.name} · {member.status === 'accepted' ? 'Confirmado' : member.status === 'pending' ? 'Convite pendente' : member.status === 'requested' ? 'Pedido de entrada' : 'Recusado'}</Text>)}
+    {club.members.map(member => <View key={member.id} style={{ gap: 8 }}>
+      <Text style={ui.body}>{playerLabel(member)} · {member.status === 'accepted' ? 'Confirmado' : member.status === 'pending' ? 'Convite pendente' : member.status === 'requested' ? 'Pedido de entrada' : 'Recusado'}</Text>
+      {session?.profile.id === club.owner_id && member.status === 'accepted' && <JerseyNumberField name={member.name} number={member.jersey_number} busy={action.busy}
+        submit={jersey_number => action.mutate(`/clubs/${club.id}/members/${member.id}/jersey-number`, { jersey_number }, refresh)} />}
+    </View>)}
     <Text style={gs.heading}>Sala de troféus</Text>
     {!club.trophies.length && <Text style={gs.muted}>Este time ainda não conquistou títulos.</Text>}
     {club.trophies.map(trophy => <View key={trophy.championship_id} style={gs.row}><TrophyIcon category={trophy.category} /><Text style={ui.body}>{trophy.name} · {trophy.season}</Text></View>)}

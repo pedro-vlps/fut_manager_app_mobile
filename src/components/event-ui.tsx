@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { palette, ui } from '@/components/fut-ui';
 import { gs } from '@/components/group-screen';
 import { Match, Team, actionLabels } from '@/services/lifecycle';
+import { JerseyNumberField } from '@/components/jersey-number-field';
+import { playerLabel } from '@/services/jersey-numbers';
 
 export function Choice({ children, selected, disabled, onPress }: PropsWithChildren<{ selected?: boolean; disabled?: boolean; onPress: () => void }>) {
   return <Pressable accessibilityRole="button" accessibilityState={{ selected, disabled }} disabled={disabled} onPress={onPress}
@@ -17,14 +19,20 @@ export function Scoreboard({ match }: { match: Pick<Match, 'scores'> }) {
     {score.result && <Text style={gs.muted}>{score.result === 'draw' ? 'Empate' : score.result === 'win' ? 'Vitória' : 'Derrota'}</Text>}
   </View>)}</View>;
 }
-export function TeamCards({ teams, ratings = {} }: { teams: Team[]; ratings?: Record<string, number | null> }) {
+export function TeamCards({ teams, ratings = {}, busy = false, setNumber }: {
+  teams: Team[]; ratings?: Record<string, number | null>; busy?: boolean;
+  setNumber?: (teamId: string, presenceId: string, number: number | null) => Promise<boolean>;
+}) {
   return <>{teams.map(team => <View key={team.id} style={[gs.card, { borderLeftWidth: 5, borderLeftColor: team.color ?? palette.green }]}>
     <Text style={gs.heading}>{team.name} · {team.players.length}</Text>
-    {team.players.map(player => <View key={player.presence_id} style={[gs.row, { flexWrap: 'wrap' }]}>
-      <Text style={[ui.body, { flex: 1 }]}>{player.name}{player.is_guest ? ' · convidado' : ''}{player.role === 'goalkeeper' ? ' · goleiro' : ''}</Text>
+    {team.players.map(player => <View key={player.presence_id} style={{ gap: 8 }}><View style={[gs.row, { flexWrap: 'wrap' }]}>
+      <Text style={[ui.body, { flex: 1 }]}>{playerLabel(player)}{player.is_guest ? ' · convidado' : ''}{player.role === 'goalkeeper' ? ' · goleiro' : ''}</Text>
       {Object.prototype.hasOwnProperty.call(ratings, player.person_id) && <Text style={gs.badge}>
         {ratings[player.person_id] === null ? 'Sem avaliação' : `Nota ${ratings[player.person_id]!.toFixed(1).replace('.', ',')}`}
       </Text>}
+    </View>
+      {setNumber && <JerseyNumberField name={player.name} number={player.jersey_number} busy={busy}
+        submit={number => setNumber(team.id, player.presence_id, number)} />}
     </View>)}
   </View>)}</>;
 }

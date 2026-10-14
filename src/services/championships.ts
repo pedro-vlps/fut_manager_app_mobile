@@ -3,7 +3,7 @@ import type { MatchAction } from './lifecycle';
 export const formats = { groups_knockout: 'Grupos + mata-mata', knockout: 'Mata-mata', cascade: 'Cascata', league: 'Liga (pontos corridos)' };
 export const statuses = { registration: 'Inscrições abertas', in_progress: 'Em andamento', finished: 'Finalizado' };
 export type Format = keyof typeof formats;
-export type ClubPlayer = { id: string; name: string; status: 'pending' | 'accepted' | 'declined' | 'requested' };
+export type ClubPlayer = { id: string; name: string; jersey_number?: number | null; status: 'pending' | 'accepted' | 'declined' | 'requested' };
 export type Club = { id: string; name: string; owner_id: string; members: ClubPlayer[]; starting_goalkeeper_id: string | null; code: string | null; trophies: { championship_id: string; name: string; season: string; category: string }[] };
 export type Invitation = { id: string; club_id: string; club_name: string };
 export type Championship = { id: string; code: string | null; name: string; season: string; description: string | null; owner_id: string; format: Format; capacity: number; home_and_away: boolean; status: keyof typeof statuses; champion_id: string | null };

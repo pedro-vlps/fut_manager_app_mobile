@@ -31,7 +31,7 @@ export function ChampionshipMatchCard({ match, data, update, canManage }: { matc
   const needsWinner = tie && match.stage !== 'groups' && match.stage !== 'league';
   const view: Pick<Match, 'scores' | 'players' | 'actions'> = {
     scores: [match.home_id, match.away_id].map((id, i) => ({ team_id: id, name: name(id), goals: i === 0 ? home : away, result: played ? tie ? 'draw' : match.winner_id === id ? 'win' : 'loss' : null })),
-    players: data.entries.filter(e => e.club_id === match.home_id || e.club_id === match.away_id).flatMap(e => e.players.map(p => ({ presence_id: p.id, person_id: p.id, name: p.name, team_id: e.club_id, is_active: true, is_temporary: false, is_guest: false, positions: [], role: 'player' as const }))),
+    players: data.entries.filter(e => e.club_id === match.home_id || e.club_id === match.away_id).flatMap(e => e.players.map(p => ({ presence_id: p.id, person_id: p.id, name: p.name, jersey_number: p.jersey_number, team_id: e.club_id, is_active: true, is_temporary: false, is_guest: false, positions: [], role: 'player' as const }))),
     actions,
   };
   const invalidAssists = view.scores.some(s => {

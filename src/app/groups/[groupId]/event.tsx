@@ -110,7 +110,7 @@ function EventContent({ groupId, eventId, readOnly }: { groupId: string; eventId
       {data.waiting_team_ids.length > 0 && <View style={gs.card}><Text style={gs.heading}>Na próxima</Text>{data.waiting_team_ids.map((id, index) => <Text key={id} style={ui.body}>{index + 1}. {data.teams.find(t => t.id === id)?.name ?? 'Time'}</Text>)}<Text style={gs.muted}>Quem avança fica em campo. O primeiro da fila entra e quem perde vai para o fim.</Text></View>}
       {data.teams.length > 0 && <><Text style={gs.heading}>Times e jogadores</Text>
         {ratings.error && <Text accessibilityRole="alert" style={ui.error}>Não foi possível carregar as avaliações. Toque em Atualizar para tentar novamente.</Text>}
-        <TeamCards teams={data.teams} ratings={ratings.data} />
+        <TeamCards teams={data.teams} ratings={ratings.data} busy={disabled} setNumber={editable ? (teamId, presenceId, jersey_number) => mutate(`/teams/${teamId}/players/${presenceId}/jersey-number`, { jersey_number }, 'Número da camisa atualizado.') : undefined} />
       </>}
       {data.matches.some(m => m.status === 'finished') && <Text style={gs.heading}>Partidas finalizadas</Text>}
       {data.matches.filter(m => m.status === 'finished').map(past => <View key={past.id} style={gs.card}>
