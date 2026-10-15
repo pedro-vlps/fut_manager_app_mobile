@@ -1,7 +1,5 @@
 # Fut Manager · App
 
-**English** | [Português (Brasil)](README.pt-BR.md) | [Development guide](https://github.com/pedro-vlps/fut_manager_app_mobile?tab=contributing-ov-file)
-
 <img src="assets/images/fut-manager-icon.png" alt="Fut Manager" width="128" />
 
 Fut Manager is a personal project that brings amateur football organization from group chats into an app: gathering players, building teams, following matches, and keeping a record of tournament achievements.
@@ -124,3 +122,7 @@ With **Wait for CI enabled**, Railway waits for the commit's GitHub Actions work
 - [Android builds (Portuguese)](BUILD_ANDROID.md)
 
 Developed by **Pedro Vieira** as a personal portfolio project.
+
+## License
+
+See [the license terms and copyright notice](legal/LICENSE).
