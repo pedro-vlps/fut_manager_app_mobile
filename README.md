@@ -117,8 +117,6 @@ With **Wait for CI enabled**, Railway waits for the commit's GitHub Actions work
 
 ## More about the project
 
-- [Changes following tournament testing (Portuguese)](Feedback.md)
-- [Previous technical documentation (Portuguese)](docs/DEVELOPMENT.md)
 - [Android builds (Portuguese)](BUILD_ANDROID.md)
 
 Developed by **Pedro Vieira** as a personal portfolio project.
