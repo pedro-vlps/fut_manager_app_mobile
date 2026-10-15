@@ -1,0 +1,35 @@
+name: App checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Do not cancel push runs: Railway must receive a completed test result for each commit.
+jobs:
+  checks:
+    name: Node 22 / tests, lint, types and PWA
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run automated tests
+        run: npm test
+      - name: Lint
+        run: npm run lint -- --no-cache
+      - name: Check TypeScript
+        run: npm run typecheck
+      - name: Build production PWA
+        run: npm run build:pwa
