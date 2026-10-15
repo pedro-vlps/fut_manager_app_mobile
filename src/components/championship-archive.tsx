@@ -9,6 +9,7 @@ import { TrophyIcon } from './trophy-icon';
 import { ChampionshipStages, ChampionshipStandings } from './championship-standings';
 import { LeagueRounds } from './league-rounds';
 import { RankingTabs } from './ranking-tabs';
+import { ResponsiveGrid } from './responsive-grid';
 
 export const archiveSections = {
   punishments: { title: 'Punições', description: 'Desclassificação e perda de pontos' },
@@ -50,11 +51,11 @@ export function ChampionshipArchiveMenu({ data }: { data: ChampionshipDetail }) 
     </View>
     <View style={{ gap: 12 }}>
       <Text style={gs.heading}>Menu do campeonato</Text>
-      {sections.map(section => <Pressable key={section} accessibilityRole="button" accessibilityLabel={`Abrir ${archiveSections[section].title}`} onPress={() => router.push({ pathname: '/championships/history', params: { championshipId: data.id, section } })}
+      <ResponsiveGrid>{sections.map(section => <Pressable key={section} accessibilityRole="button" accessibilityLabel={`Abrir ${archiveSections[section].title}`} onPress={() => router.push({ pathname: '/championships/history', params: { championshipId: data.id, section } })}
         style={({ pressed }) => [gs.card, gs.row, { paddingVertical: 16 }, pressed && { backgroundColor: '#E5EFE5' }]}>
         <View style={{ flex: 1, gap: 4 }}><Text style={gs.link}>{archiveSections[section].title}</Text><Text style={gs.muted}>{archiveSections[section].description}</Text></View>
         <Text style={{ color: palette.green, fontSize: 22 }} accessible={false}>›</Text>
-      </Pressable>)}
+      </Pressable>)}</ResponsiveGrid>
     </View>
   </>;
 }

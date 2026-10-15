@@ -2,6 +2,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { palette } from '@/components/fut-ui';
+import { ResponsiveProvider } from '@/contexts/responsive';
+import DesktopShell from '@/components/desktop-shell';
 
 function Navigation() {
   const { session } = useAuth();
@@ -11,5 +13,5 @@ function Navigation() {
   </Stack>;
 }
 export default function RootLayout() {
-  return <AuthProvider><StatusBar style="dark" /><Navigation /></AuthProvider>;
+  return <AuthProvider><ResponsiveProvider><StatusBar style="dark" /><DesktopShell><Navigation /></DesktopShell></ResponsiveProvider></AuthProvider>;
 }

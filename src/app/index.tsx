@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useResponsive } from '@/contexts/responsive';
 
 const roles = {
   owner: "Organizador",
@@ -27,6 +28,7 @@ const normalize = (value: string) =>
     .toLowerCase();
 
 export default function HomeScreen() {
+  const layout = useResponsive();
   const { session, signOut, expireSession } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [query, setQuery] = useState("");
@@ -82,10 +84,13 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={ui.screen}>
       <FlatList
+        key={`groups-${layout.columns}`}
+        numColumns={layout.columns}
+        columnWrapperStyle={layout.columns > 1 ? { gap: 20 } : undefined}
         data={loading ? [] : filtered}
         keyExtractor={(item) => item.id}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[ui.content, { flexGrow: 1, gap: 16 }]}
+        contentContainerStyle={[ui.content, { maxWidth: layout.contentMaxWidth, padding: layout.padding, flexGrow: 1, gap: 20 }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -96,7 +101,7 @@ export default function HomeScreen() {
         }
         ListHeaderComponent={
           <View style={{ gap: 28, marginBottom: 8 }}>
-            <View style={styles.topbar}>
+            {!layout.desktop && <View style={styles.topbar}>
               <Brand />
               <Pressable
                 accessibilityRole="button"
@@ -105,7 +110,7 @@ export default function HomeScreen() {
               >
                 <Text style={styles.logoutText}>Sair</Text>
               </Pressable>
-            </View>
+            </View>}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Ver meu perfil"
@@ -177,7 +182,7 @@ export default function HomeScreen() {
                 params: { groupId: item.id },
               })
             }
-            style={({ pressed }) => [styles.card, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [styles.card, { flex: 1, minWidth: 0, maxWidth: layout.columns > 1 ? `${100 / layout.columns}%` : undefined }, pressed && { opacity: 0.7 }]}
           >
             <View style={styles.cardHeader}>
               <View

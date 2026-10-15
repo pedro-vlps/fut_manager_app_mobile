@@ -11,6 +11,7 @@ import { useMutation } from '@/hooks/use-mutation';
 import { Dropdown } from '@/components/dropdown';
 import { RegistrationWindowInfo } from '@/components/registration-opening';
 import { useRegistrationRefresh } from '@/hooks/use-registration-refresh';
+import { ResponsiveGrid } from '@/components/responsive-grid';
 
 export default function GroupPage() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -85,7 +86,7 @@ function GroupContent({ groupId }: { groupId: string }) {
     </View>
     {feedback && <Text accessibilityRole="alert" style={feedback.error ? ui.error : gs.success}>{feedback.message}</Text>}
     <Text style={gs.heading}>Explore o grupo</Text>
-    {([
+    <ResponsiveGrid>{([
       ['history', 'Histórico de eventos', 'Confira as datas e os participantes das peladas.'],
       ['seasons', 'Histórico de temporadas', 'Veja os rankings e registros dos períodos encerrados.'],
       ['standings', 'Classificação geral', 'Tabela de pontos dos jogadores em todas as peladas.'],
@@ -93,7 +94,7 @@ function GroupContent({ groupId }: { groupId: string }) {
       ['members', 'Membros do grupo', 'Conheça quem faz parte da sua turma.'],
     ] as const).map(([page, title, subtitle]) => <Pressable key={page} accessibilityRole="button" onPress={() => router.push({ pathname: `/groups/[groupId]/${page}`, params: { groupId } })} style={({ pressed }) => [gs.card, { opacity: pressed ? 0.65 : 1 }]}>
       <View style={gs.row}><Text style={[gs.heading, { flex: 1 }]}>{title}</Text><Text style={gs.link}>→</Text></View><Text style={ui.body}>{subtitle}</Text>
-    </Pressable>)}
+    </Pressable>)}</ResponsiveGrid>
     {!event && <Empty>Enquanto isso, confira os membros e os rankings do grupo.</Empty>}
   </GroupScreen>;
 }

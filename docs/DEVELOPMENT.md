@@ -220,6 +220,33 @@ As atualizações nativas ficam desativadas quando não há um endpoint configur
 As configurações públicas necessárias à execução nativa aparecem no aplicativo
 compilado; credenciais de banco e tokens privados nunca devem ser usados nelas.
 
+## Layout web adaptável
+
+`ResponsiveProvider` usa `useWindowDimensions` para acompanhar redimensionamentos
+e `useSyncExternalStore` para ler a identificação do navegador sem divergência de
+hidratação no export estático. Celulares Android/iOS, tablets e iPads com user
+agent de Mac e suporte a toque recebem o layout mobile por padrão. Computadores
+com tela touch não são classificados como tablets só por terem toque.
+
+`responsive-layout.ts` centraliza os breakpoints: menu lateral a partir de 900px,
+barra compacta abaixo de 1280px e navegação superior em janelas menores. As
+colunas dependem do espaço disponível depois do menu e do padding, com limite
+de 1240px para o conteúdo desktop e 760px para mobile/tablet.
+
+`desktop-shell.web.tsx` contém os elementos web de navegação, estilos de hover e
+foco para teclado. O arquivo sem sufixo é o fallback nativo. A estrutura que
+contém o navegador de rotas não é remontada ao redimensionar a janela, preservando
+formulários e a rota atual. Não há controle manual, armazenamento de preferência
+ou leitura de preferências antigas. A seleção de versão é exclusiva do navegador.
+
+Valide com lint, TypeScript, `node --test tests/responsive-layout.test.mjs` e
+`npm run build:pwa`. Para a inspeção visual, teste desktop de 1920/1280/1024/800px,
+mobile de 390px e tablet em orientação horizontal, conferindo navegação, listas,
+rolagem e formulários. Teste também a opção de versão para computador do navegador:
+o modo desktop é utilizado quando ele informa uma identificação de desktop.
+A identificação pelo navegador é uma heurística; o site não consegue distinguir
+modos para os quais o navegador envia a mesma identificação.
+
 ## Revisão antes de enviar ao GitHub
 
 Verifique `git diff` e confirme que arquivos privados continuam ignorados.

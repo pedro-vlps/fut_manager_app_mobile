@@ -10,6 +10,7 @@ import { Club, Invitation } from '@/services/championships';
 import { Dropdown } from '@/components/dropdown';
 import { JerseyNumberField } from '@/components/jersey-number-field';
 import { playerLabel } from '@/services/jersey-numbers';
+import { ResponsiveGrid } from '@/components/responsive-grid';
 
 function Team({ club, refresh }: { club: Club; refresh: () => Promise<void> }) {
   const { session } = useAuth();
@@ -71,6 +72,6 @@ export default function Clubs() {
       <TextInput accessibilityLabel="Nome do time" style={ui.input} placeholder="Nome do time" placeholderTextColor={palette.muted} value={name} onChangeText={setName} maxLength={80} editable={!action.busy} />
       <Button loading={action.busy} disabled={!name.trim()} onPress={() => void action.mutate('/clubs', { name: name.trim() }, async () => { setName(''); await refresh(); })}>Criar time</Button>
     </View>
-    {(clubs.data ?? []).map(club => <Team key={club.id} club={club} refresh={clubs.refresh} />)}
+    <ResponsiveGrid maxColumns={2}>{(clubs.data ?? []).map(club => <Team key={club.id} club={club} refresh={clubs.refresh} />)}</ResponsiveGrid>
   </GroupScreen>;
 }

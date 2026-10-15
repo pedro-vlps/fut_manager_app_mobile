@@ -67,6 +67,25 @@ npm start
 
 Para a versão web, execute `npm run web`. A geração da PWA usa `npm run build:pwa`. As instruções de build nativo estão em [BUILD_ANDROID.md](BUILD_ANDROID.md).
 
+## Web para desktop, celular e tablet
+
+A mesma URL atende todos os dispositivos. No modo automático, celulares e tablets
+usam a interface mobile, incluindo tablets largos e iPads. Computadores usam o
+layout desktop: menu lateral, cabeçalho com perfil e listas em duas ou três colunas.
+Ao reduzir a janela, o menu vira uma barra compacta ou uma navegação no topo e
+o conteúdo se reorganiza para caber na tela. Formulários, jogos e tabelas usam
+a mesma API e as mesmas permissões nas duas visualizações.
+
+A escolha na aplicação é sempre automática: não há seletor de visualização nem
+preferência de layout salva pelo site. Para solicitar a versão desktop no celular,
+use **Versão para computador** nas configurações do próprio navegador. O site
+segue a identificação enviada pelo navegador; preferências antigas do site não
+interferem mais. A versão nativa mantém o layout mobile.
+
+Para publicar, gere novamente a PWA com `npm run build:pwa` e distribua a pasta
+`dist` pelo fluxo de hospedagem existente. Não há outro frontend nem outro
+deploy para desktop, e a API não precisa de alteração para esta funcionalidade.
+
 As variáveis `EXPO_PUBLIC_*` são públicas no bundle: use-as apenas para configuração do cliente, nunca para credenciais do banco ou chaves de criptografia.
 
 ## Qualidade e estrutura

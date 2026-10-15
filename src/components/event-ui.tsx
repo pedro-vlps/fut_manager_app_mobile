@@ -5,6 +5,7 @@ import { gs } from '@/components/group-screen';
 import { Match, Team, actionLabels } from '@/services/lifecycle';
 import { JerseyNumberField } from '@/components/jersey-number-field';
 import { playerLabel } from '@/services/jersey-numbers';
+import { ResponsiveGrid } from '@/components/responsive-grid';
 
 export function Choice({ children, selected, disabled, onPress }: PropsWithChildren<{ selected?: boolean; disabled?: boolean; onPress: () => void }>) {
   return <Pressable accessibilityRole="button" accessibilityState={{ selected, disabled }} disabled={disabled} onPress={onPress}
@@ -23,7 +24,7 @@ export function TeamCards({ teams, ratings = {}, busy = false, setNumber }: {
   teams: Team[]; ratings?: Record<string, number | null>; busy?: boolean;
   setNumber?: (teamId: string, presenceId: string, number: number | null) => Promise<boolean>;
 }) {
-  return <>{teams.map(team => <View key={team.id} style={[gs.card, { borderLeftWidth: 5, borderLeftColor: team.color ?? palette.green }]}>
+  return <ResponsiveGrid maxColumns={2}>{teams.map(team => <View key={team.id} style={[gs.card, { borderLeftWidth: 5, borderLeftColor: team.color ?? palette.green }]}>
     <Text style={gs.heading}>{team.name} · {team.players.length}</Text>
     {team.players.map(player => <View key={player.presence_id} style={{ gap: 8 }}><View style={[gs.row, { flexWrap: 'wrap' }]}>
       <Text style={[ui.body, { flex: 1 }]}>{playerLabel(player)}{player.is_guest ? ' · convidado' : ''}{player.role === 'goalkeeper' ? ' · goleiro' : ''}</Text>
@@ -34,7 +35,7 @@ export function TeamCards({ teams, ratings = {}, busy = false, setNumber }: {
       {setNumber && <JerseyNumberField name={player.name} number={player.jersey_number} busy={busy}
         submit={number => setNumber(team.id, player.presence_id, number)} />}
     </View>)}
-  </View>)}</>;
+  </View>)}</ResponsiveGrid>;
 }
 export function MatchLog({ match, remove, busy }: { match: Pick<Match, 'scores' | 'actions'>; remove?: (id: string) => void; busy: boolean }) {
   const grouped = new Map<string, { action: Match['actions'][number]; ids: string[] }>();

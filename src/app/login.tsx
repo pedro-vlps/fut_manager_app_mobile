@@ -6,8 +6,10 @@ import { useAuth } from '@/contexts/auth';
 import { PositionSelector, Positions } from '@/components/position-selector';
 import { request } from '@/services/api';
 import { passwordRequirements, validNewPassword } from '@/services/password-policy';
+import { useResponsive } from '@/contexts/responsive';
 
 export default function LoginScreen() {
+  const layout = useResponsive();
   const { signIn, notice } = useAuth();
   const [email, setEmail] = useState('');
   const [registering, setRegistering] = useState(false);
@@ -52,14 +54,17 @@ export default function LoginScreen() {
   return <SafeAreaView style={ui.screen}>
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
-        <View style={styles.container}>
+        <View style={[styles.container, layout.wideLogin && { maxWidth: 1120, flexDirection: 'row', gap: 64, alignItems: 'center', padding: 40 }]}>
+          <View style={[{ gap: 28 }, layout.wideLogin && { flex: 1, minWidth: 0 }]}>
           <Brand />
-          <View style={styles.hero}>
+          <View style={[styles.hero, layout.wideLogin && { padding: 40, minHeight: 460, justifyContent: 'center' }]}>
             <Text style={styles.heroEyebrow}>SEU FUTEBOL COMEÇA AQUI</Text>
-            <Text style={styles.heroTitle}>O jogo é melhor{'\n'}com a sua turma.</Text>
+            <Text style={[styles.heroTitle, layout.wideLogin && { fontSize: 42, lineHeight: 49 }]}>O jogo é melhor{'\n'}com a sua turma.</Text>
             <Text style={styles.heroBody}>Seus grupos, suas peladas e a galera que joga junto.</Text>
-            <View style={styles.pitch} accessible={false}><View style={styles.halfway} /><View style={styles.circle} /><View style={styles.goal} /></View>
+            <View style={[styles.pitch, layout.wideLogin && { height: 156, marginTop: 30 }]} accessible={false}><View style={styles.halfway} /><View style={styles.circle} /><View style={styles.goal} /></View>
           </View>
+          </View>
+          <View style={[{ gap: 28 }, layout.wideLogin && { width: 420, minWidth: 0 }]}>
           <View style={{ gap: 8 }}><Text style={ui.title}>{registering ? 'Crie seu perfil' : 'Entre em campo'}</Text><Text style={ui.body}>{registering ? 'Conte em quais modalidades e posições você joga.' : 'Acesse sua conta para encontrar seus grupos.'}</Text></View>
           <View style={{ gap: 18 }}>
             {registering && <View style={{ gap: 8 }}><Text style={styles.label}>Nome</Text><TextInput accessibilityLabel="Nome" value={name} onChangeText={setName} editable={!busy} maxLength={120} style={ui.input} autoComplete="name" /></View>}
@@ -85,6 +90,7 @@ export default function LoginScreen() {
             </Pressable>
           </View>
           <Text style={styles.footer}>Sua turma. Seu jogo. Seu momento.</Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

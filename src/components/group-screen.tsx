@@ -3,11 +3,13 @@ import { PropsWithChildren } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, palette, ui } from './fut-ui';
+import { useResponsive } from '@/contexts/responsive';
 
 export function GroupScreen({ title, subtitle, children, loading, error, refreshing, refresh, eyebrow = 'FUTMANAGER · SEU GRUPO' }: PropsWithChildren<{
   title: string; subtitle?: string; loading?: boolean; error?: string; refreshing: boolean; refresh: () => void; eyebrow?: string;
 }>) {
-  return <SafeAreaView style={ui.screen}><ScrollView contentContainerStyle={ui.content}
+  const layout = useResponsive();
+  return <SafeAreaView style={ui.screen}><ScrollView contentContainerStyle={[ui.content, { maxWidth: layout.contentMaxWidth, padding: layout.padding }]}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} colors={[palette.green]} tintColor={palette.green} />}>
     <View style={gs.top}><Pressable accessibilityRole="button" onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={gs.back}><Text style={gs.link}>← Voltar</Text></Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel="Atualizar" disabled={refreshing} onPress={refresh} style={gs.back}><Text style={gs.link}>{refreshing ? 'Atualizando…' : 'Atualizar'}</Text></Pressable></View>

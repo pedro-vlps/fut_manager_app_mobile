@@ -6,6 +6,7 @@ import { Button, palette, ui } from '@/components/fut-ui';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { Championship, formats, statuses } from '@/services/championships';
 import { ChampionshipCodeSearch } from '@/components/championship-code-search';
+import { ResponsiveGrid } from '@/components/responsive-grid';
 
 export default function Championships() {
   const resource = useApiResource<Championship[]>('/championship-feed');
@@ -17,11 +18,11 @@ export default function Championships() {
     <ChampionshipCodeSearch />
     <TextInput style={ui.input} accessibilityLabel="Buscar campeonato" placeholder="Buscar campeonato ou temporada" placeholderTextColor={palette.muted} value={query} onChangeText={setQuery} />
     {!filtered?.length && <Text style={ui.body}>Nenhum campeonato encontrado.</Text>}
-    {filtered?.map(item => <Pressable key={item.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/championships/[championshipId]', params: { championshipId: item.id } })} style={gs.card}>
+    <ResponsiveGrid>{filtered?.map(item => <Pressable key={item.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/championships/[championshipId]', params: { championshipId: item.id } })} style={[gs.card, { height: '100%' }]}>
       <Text style={gs.badge}>{statuses[item.status]} · {item.season}</Text>
       <Text style={gs.heading}>{item.name}</Text>
       <Text style={ui.body}>{formats[item.format]} · {item.capacity} times</Text>
       <View><Text style={gs.link}>Abrir campeonato →</Text></View>
-    </Pressable>)}
+    </Pressable>)}</ResponsiveGrid>
   </GroupScreen>;
 }
